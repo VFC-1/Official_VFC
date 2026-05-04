@@ -22,29 +22,11 @@ function save(key, val) { localStorage.setItem(key, JSON.stringify(val)); }
 
 const WC_LABELS = { sub165: 'Sub 165', '165to185': '165–185', '185plus': '185+' };
 
-/* ═══════════════════════════════════════════════
-   PASSWORD UNLOCK — shared util
-   Returns true if session already unlocked.
-   Prompts otherwise.
-═══════════════════════════════════════════════ */
-function checkSession(key) {
-  return sessionStorage.getItem(key) === '1';
-}
-function setSession(key) {
-  sessionStorage.setItem(key, '1');
-}
+function checkSession(key) { return sessionStorage.getItem(key) === '1'; }
+function setSession(key)   { sessionStorage.setItem(key, '1'); }
 
-/* ═══════════════════════════════════════════════
-   MODAL helpers
-═══════════════════════════════════════════════ */
-function openModal(overlay) {
-  overlay.classList.add('open');
-  document.body.style.overflow = 'hidden';
-}
-function closeModal(overlay) {
-  overlay.classList.remove('open');
-  document.body.style.overflow = '';
-}
+function openModal(overlay)  { overlay.classList.add('open');    document.body.style.overflow = 'hidden'; }
+function closeModal(overlay) { overlay.classList.remove('open'); document.body.style.overflow = ''; }
 
 /* ═══════════════════════════════════════════════
    SUBMIT PAGE
@@ -59,13 +41,14 @@ function initSubmitPage() {
 
   form.addEventListener('submit', e => {
     e.preventDefault();
-    const f1 = $('fighter1').value.trim();
-    const f2 = $('fighter2').value.trim();
-    const wc = $('weightClass').value;
-    if (!f1 || !f2 || !wc) return;
+    const f1    = $('fighter1').value.trim();
+    const f2    = $('fighter2').value.trim();
+    const wc    = $('weightClass').value;
+    const sport = $('sport') ? $('sport').value : '';
+    if (!f1 || !f2 || !wc || !sport) return;
 
     const list = load(K_SUBMISSIONS, []);
-    list.unshift({ fighter1: f1, fighter2: f2, wc, wcLabel: WC_LABELS[wc] || wc, date: new Date().toLocaleDateString() });
+    list.unshift({ fighter1: f1, fighter2: f2, wc, wcLabel: WC_LABELS[wc] || wc, sport, date: new Date().toLocaleDateString() });
     save(K_SUBMISSIONS, list);
 
     form.reset();
@@ -85,7 +68,7 @@ function renderSubmissions(container) {
   container.innerHTML = list.map(s =>
     `<div class="submission-item">
        <span class="fighters">${esc(s.fighter1)} vs ${esc(s.fighter2)}</span>
-       <span class="weight">${esc(s.wcLabel)} &bull; ${esc(s.date)}</span>
+       <span class="weight">${esc(s.wcLabel)} &bull; ${esc(s.sport || '')} &bull; ${esc(s.date)}</span>
      </div>`
   ).join('');
 }
@@ -96,11 +79,11 @@ function renderSubmissions(container) {
 const DEFAULT_RANKINGS = {
   sub165:    { champ: {name:'',rec:''}, contenders:[{name:'',rec:''},{name:'',rec:''},{name:'',rec:''}], chuds:[{name:'',rec:''},{name:'',rec:''},{name:'',rec:''}] },
   '165to185':{ champ: {name:'',rec:''}, contenders:[{name:'',rec:''},{name:'',rec:''},{name:'',rec:''}], chuds:[{name:'',rec:''},{name:'',rec:''},{name:'',rec:''}] },
-  '185plus': { champ: {name:'',rec:''}, contenders:[{name:'',rec:''},{name:'',rec:''},{name:'',rec:''}], chuds:[{name:'',rec:''},{name:'',rec:''}  ,{name:'',rec:''}] },
+  '185plus': { champ: {name:'',rec:''}, contenders:[{name:'',rec:''},{name:'',rec:''},{name:'',rec:''}], chuds:[{name:'',rec:''},{name:'',rec:''},{name:'',rec:''}] },
 };
 
 let rankingsEditing = false;
-let pendingSlot = null; // { el, type, wc, idx }
+let pendingSlot = null;
 
 function initRankingsPage() {
   const pwInput  = $('rankPwInput');
@@ -111,14 +94,12 @@ function initRankingsPage() {
   const data = load(K_RANKINGS, DEFAULT_RANKINGS);
   renderRankings(data);
 
-  // If already unlocked this session, show edit state
   if (checkSession('rank_unlocked')) {
     enableRankEdit(pwStatus, pwBtn);
   }
 
   pwBtn.addEventListener('click', () => {
     if (rankingsEditing) {
-      // Save & lock
       const updated = collectRankings();
       save(K_RANKINGS, updated);
       renderRankings(updated);
@@ -137,13 +118,11 @@ function initRankingsPage() {
     }
   });
 
-  // Allow Enter key in password field
   pwInput.addEventListener('keydown', e => { if (e.key === 'Enter') pwBtn.click(); });
 
-  // Slot edit modal
-  const slotModal     = $('slotModal');
+  const slotModal      = $('slotModal');
   const slotModalClose = $('slotModalClose');
-  const slotSaveBtn   = $('slotSaveBtn');
+  const slotSaveBtn    = $('slotSaveBtn');
 
   slotModalClose.addEventListener('click', () => closeModal(slotModal));
   slotModal.addEventListener('click', e => { if (e.target === slotModal) closeModal(slotModal); });
@@ -152,19 +131,13 @@ function initRankingsPage() {
     if (!pendingSlot) return;
     const name = $('slotName').value.trim();
     const rec  = $('slotRecord').value.trim();
-
     const data = load(K_RANKINGS, DEFAULT_RANKINGS);
     const wc   = pendingSlot.wc;
-
     if (!data[wc]) return;
 
-    if (pendingSlot.type === 'champ') {
-      data[wc].champ = { name, rec };
-    } else if (pendingSlot.type === 'contender') {
-      data[wc].contenders[pendingSlot.idx] = { name, rec };
-    } else {
-      data[wc].chuds[pendingSlot.idx] = { name, rec };
-    }
+    if (pendingSlot.type === 'champ')         data[wc].champ = { name, rec };
+    else if (pendingSlot.type === 'contender') data[wc].contenders[pendingSlot.idx] = { name, rec };
+    else                                       data[wc].chuds[pendingSlot.idx] = { name, rec };
 
     save(K_RANKINGS, data);
     renderRankings(data);
@@ -198,36 +171,26 @@ function disableRankEdit(statusEl, btn, inputEl) {
 function attachSlotClicks() {
   const WCS = ['sub165','165to185','185plus'];
   WCS.forEach(wc => {
-    // Champ
     const champNameEl = $(`champ-${wc}-name`);
-    if (champNameEl) {
-      champNameEl.onclick = () => openSlotModal('champ', wc, 0, champNameEl.dataset);
-    }
-    // Contenders
+    if (champNameEl) champNameEl.onclick = () => openSlotModal('champ', wc, 0);
+
     for (let i = 1; i <= 3; i++) {
-      const slot = $(`${wc}-c${i}`);
-      if (slot) {
-        slot.querySelector('.rank-name').onclick = () => openSlotModal('contender', wc, i - 1);
-      }
-    }
-    // Chuds
-    for (let i = 1; i <= 3; i++) {
-      const slot = $(`${wc}-h${i}`);
-      if (slot) {
-        slot.querySelector('.rank-name').onclick = () => openSlotModal('chud', wc, i - 1);
-      }
+      const cs = $(`${wc}-c${i}`);
+      if (cs) cs.querySelector('.rank-name').onclick = () => openSlotModal('contender', wc, i - 1);
+      const hs = $(`${wc}-h${i}`);
+      if (hs) hs.querySelector('.rank-name').onclick = () => openSlotModal('chud', wc, i - 1);
     }
   });
 }
 
 function openSlotModal(type, wc, idx) {
-  const data  = load(K_RANKINGS, DEFAULT_RANKINGS);
+  const data   = load(K_RANKINGS, DEFAULT_RANKINGS);
   const wcData = data[wc] || { champ:{name:'',rec:''}, contenders:[], chuds:[] };
 
   let current = { name: '', rec: '' };
-  if (type === 'champ') current = wcData.champ;
+  if (type === 'champ')          current = wcData.champ;
   else if (type === 'contender') current = wcData.contenders[idx] || current;
-  else current = wcData.chuds[idx] || current;
+  else                           current = wcData.chuds[idx] || current;
 
   $('slotModalTitle').textContent = type === 'champ'
     ? `EDIT CHAMPION — ${WC_LABELS[wc]}`
@@ -246,73 +209,59 @@ function renderRankings(data) {
   WCS.forEach(wc => {
     const wcData = data[wc] || DEFAULT_RANKINGS[wc];
 
-    // Champ
     const nameEl = $(`champ-${wc}-name`);
     const recEl  = $(`champ-${wc}-rec`);
-    if (nameEl) {
-      const n = wcData.champ.name;
-      nameEl.textContent = n || 'VACANT';
-      nameEl.classList.toggle('champ-vacant', !n);
-    }
-    if (recEl) { recEl.textContent = wcData.champ.rec || ''; }
+    if (nameEl) { nameEl.textContent = wcData.champ.name || 'VACANT'; nameEl.classList.toggle('champ-vacant', !wcData.champ.name); }
+    if (recEl)  { recEl.textContent  = wcData.champ.rec  || ''; }
 
-    // Contenders
     wcData.contenders.forEach((f, i) => {
       const slot = $(`${wc}-c${i+1}`);
       if (!slot) return;
-      const nEl = slot.querySelector('.rank-name');
+      slot.querySelector('.rank-name').textContent = f.name || '—';
       const rEl = slot.querySelector('.rank-rec');
-      nEl.textContent = f.name || '—';
       if (rEl) rEl.textContent = f.rec || '';
       slot.classList.toggle('rank-empty', !f.name);
-      slot.classList.toggle('filled', !!f.name);
-      slot.classList.toggle('contender', !!f.name);
+      slot.classList.toggle('filled',     !!f.name);
+      slot.classList.toggle('contender',  !!f.name);
     });
 
-    // Chuds
     wcData.chuds.forEach((f, i) => {
       const slot = $(`${wc}-h${i+1}`);
       if (!slot) return;
-      const nEl = slot.querySelector('.rank-name');
+      slot.querySelector('.rank-name').textContent = f.name || '—';
       const rEl = slot.querySelector('.rank-rec');
-      nEl.textContent = f.name || '—';
       if (rEl) rEl.textContent = f.rec || '';
       slot.classList.toggle('rank-empty', !f.name);
-      slot.classList.toggle('filled', !!f.name);
-      slot.classList.toggle('chud', !!f.name);
+      slot.classList.toggle('filled',     !!f.name);
+      slot.classList.toggle('chud',       !!f.name);
     });
   });
 
-  // Re-attach clicks if still in edit mode
   if (rankingsEditing) attachSlotClicks();
 }
 
-function collectRankings() {
-  return load(K_RANKINGS, DEFAULT_RANKINGS);
-}
+function collectRankings() { return load(K_RANKINGS, DEFAULT_RANKINGS); }
 
 /* ═══════════════════════════════════════════════
    FIGHTER PROFILES PAGE
 ═══════════════════════════════════════════════ */
-let profilesEditing = false;
-let editingFighterId = null;
+let profilesEditing    = false;
+let editingFighterId   = null;
 let pendingPhotoBase64 = null;
 
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2); }
 
 function initProfilesPage() {
-  const pwInput   = $('profPwInput');
-  const pwBtn     = $('profPwBtn');
-  const pwStatus  = $('profPwStatus');
-  const addBtn    = $('addFighterBtn');
-  const grid      = $('fightersGrid');
+  const pwInput  = $('profPwInput');
+  const pwBtn    = $('profPwBtn');
+  const pwStatus = $('profPwStatus');
+  const addBtn   = $('addFighterBtn');
+  const grid     = $('fightersGrid');
   if (!pwBtn) return;
 
   renderFighters(grid);
 
-  if (checkSession('prof_unlocked')) {
-    enableProfEdit(pwStatus, pwBtn, addBtn);
-  }
+  if (checkSession('prof_unlocked')) enableProfEdit(pwStatus, pwBtn, addBtn);
 
   pwBtn.addEventListener('click', () => {
     if (profilesEditing) {
@@ -331,42 +280,34 @@ function initProfilesPage() {
   });
   pwInput.addEventListener('keydown', e => { if (e.key === 'Enter') pwBtn.click(); });
 
-  // Add fighter
   addBtn.addEventListener('click', () => openEditModal(null));
 
-  // Bio modal close
   const bioModal = $('bioModal');
   $('bioModalClose').addEventListener('click', () => closeModal(bioModal));
   bioModal.addEventListener('click', e => { if (e.target === bioModal) closeModal(bioModal); });
 
-  // Edit modal close
   const editModal = $('editFighterModal');
   $('editModalClose').addEventListener('click', () => closeModal(editModal));
   editModal.addEventListener('click', e => { if (e.target === editModal) closeModal(editModal); });
 
-  // Photo upload preview
   $('editPhotoFile').addEventListener('change', e => {
     const file = e.target.files[0];
     if (!file) return;
     const reader = new FileReader();
     reader.onload = ev => {
       pendingPhotoBase64 = ev.target.result;
-      const prev = $('editPhotoPreview');
-      prev.innerHTML = `<img src="${pendingPhotoBase64}" alt="preview" />`;
+      $('editPhotoPreview').innerHTML = `<img src="${pendingPhotoBase64}" alt="preview" />`;
       $('editPhotoLabel').textContent = file.name;
     };
     reader.readAsDataURL(file);
   });
 
-  // Save fighter
   $('editSaveBtn').addEventListener('click', saveFighter);
 
-  // Delete fighter
   $('editDeleteBtn').addEventListener('click', () => {
     if (!editingFighterId) return;
     if (!confirm('Delete this fighter?')) return;
-    const fighters = load(K_FIGHTERS, []).filter(f => f.id !== editingFighterId);
-    save(K_FIGHTERS, fighters);
+    save(K_FIGHTERS, load(K_FIGHTERS, []).filter(f => f.id !== editingFighterId));
     closeModal(editModal);
     renderFighters(grid);
   });
@@ -397,12 +338,10 @@ function disableProfEdit(statusEl, btn, inputEl, addBtn) {
 function renderFighters(grid) {
   if (!grid) return;
   const fighters = load(K_FIGHTERS, []);
-
   if (!fighters.length) {
     grid.innerHTML = '<div class="no-fighters">No fighters on the roster yet</div>';
     return;
   }
-
   grid.innerHTML = fighters.map(f => {
     const avatarHtml = f.photo
       ? `<div class="fighter-avatar"><img src="${f.photo}" alt="${esc(f.name)}" /></div>`
@@ -424,58 +363,41 @@ function renderFighters(grid) {
 }
 
 function openBioModal(id) {
-  const fighters = load(K_FIGHTERS, []);
-  const f = fighters.find(x => x.id === id);
+  const f = load(K_FIGHTERS, []).find(x => x.id === id);
   if (!f) return;
-
-  const bioPhoto = $('bioPhoto');
-  if (f.photo) {
-    bioPhoto.innerHTML = `<img src="${f.photo}" alt="${esc(f.name)}" />`;
-  } else {
-    bioPhoto.innerHTML = '🥊';
-  }
-  $('bioName').textContent = f.name;
-  $('bioWc').textContent   = f.weightClass;
-  $('bioRec').textContent  = f.record || '0-0';
+  $('bioPhoto').innerHTML = f.photo ? `<img src="${f.photo}" alt="${esc(f.name)}" />` : '🥊';
+  $('bioName').textContent    = f.name;
+  $('bioWc').textContent      = f.weightClass;
+  $('bioRec').textContent     = f.record || '0-0';
   $('bioBioText').textContent = f.bio || '';
-
   openModal($('bioModal'));
 }
 
 function openEditModal(id) {
-  editingFighterId = id;
+  editingFighterId   = id;
   pendingPhotoBase64 = null;
 
-  const deleteBtn = $('editDeleteBtn');
-
   if (id) {
-    const fighters = load(K_FIGHTERS, []);
-    const f = fighters.find(x => x.id === id);
+    const f = load(K_FIGHTERS, []).find(x => x.id === id);
     if (!f) return;
     $('editModalTitle').textContent = 'EDIT FIGHTER';
     $('editName').value        = f.name;
     $('editWeightClass').value = f.weightClass;
     $('editRecord').value      = f.record || '';
     $('editBio').value         = f.bio    || '';
-
-    const prev = $('editPhotoPreview');
-    if (f.photo) {
-      prev.innerHTML = `<img src="${f.photo}" alt="preview" />`;
-    } else {
-      prev.innerHTML = '🥊';
-    }
+    $('editPhotoPreview').innerHTML = f.photo ? `<img src="${f.photo}" alt="preview" />` : '🥊';
     $('editPhotoLabel').textContent = f.photo ? 'Change photo' : 'Click to upload photo';
-    deleteBtn.style.display = '';
+    $('editDeleteBtn').style.display = '';
   } else {
-    $('editModalTitle').textContent = 'ADD FIGHTER';
-    $('editName').value        = '';
-    $('editWeightClass').value = '';
-    $('editRecord').value      = '';
-    $('editBio').value         = '';
-    $('editPhotoPreview').innerHTML = '🥊';
-    $('editPhotoLabel').textContent = 'Click to upload photo';
-    $('editPhotoFile').value = '';
-    deleteBtn.style.display = 'none';
+    $('editModalTitle').textContent  = 'ADD FIGHTER';
+    $('editName').value              = '';
+    $('editWeightClass').value       = '';
+    $('editRecord').value            = '';
+    $('editBio').value               = '';
+    $('editPhotoPreview').innerHTML  = '🥊';
+    $('editPhotoLabel').textContent  = 'Click to upload photo';
+    $('editPhotoFile').value         = '';
+    $('editDeleteBtn').style.display = 'none';
   }
 
   openModal($('editFighterModal'));
@@ -486,24 +408,16 @@ function saveFighter() {
   const wc   = $('editWeightClass').value;
   const rec  = $('editRecord').value.trim();
   const bio  = $('editBio').value.trim();
-
   if (!name || !wc) { alert('Name and weight class are required.'); return; }
 
   const fighters = load(K_FIGHTERS, []);
-
   if (editingFighterId) {
     const idx = fighters.findIndex(f => f.id === editingFighterId);
     if (idx === -1) return;
-    fighters[idx] = {
-      ...fighters[idx],
-      name, weightClass: wc, record: rec, bio,
-      photo: pendingPhotoBase64 !== null ? pendingPhotoBase64 : fighters[idx].photo,
-    };
+    fighters[idx] = { ...fighters[idx], name, weightClass: wc, record: rec, bio,
+      photo: pendingPhotoBase64 !== null ? pendingPhotoBase64 : fighters[idx].photo };
   } else {
-    fighters.push({
-      id: uid(), name, weightClass: wc, record: rec, bio,
-      photo: pendingPhotoBase64 || '',
-    });
+    fighters.push({ id: uid(), name, weightClass: wc, record: rec, bio, photo: pendingPhotoBase64 || '' });
   }
 
   save(K_FIGHTERS, fighters);
