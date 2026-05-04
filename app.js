@@ -1,57 +1,51 @@
 /* ═══════════════════════════════════════════════
    VFC — Vop Fight Club  |  app.js
-   CHANGE THE PASSWORD BELOW (line 8):
+   CHANGE THE PASSWORD BELOW:
 */
 const ADMIN_PASSWORD = 'VFC2025';
 
 /* ── JSONBin config ── */
-const BIN_ID  = '69f92625aaba8821976fd7df';
+const BIN_ID  = '69f9289b856a682189a7f4b3';
 const BIN_KEY = '$2a$10$anaNujlYjKmXfp6C5dVIP.QJHkb8lo0lioPvVaP2qlk5K4hU4JX3i';
 const BIN_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
 
-/* ── Storage keys ── */
-const K_RANKINGS = 'vfc_rankings_v2';
+/* ── Local storage (fighters only) ── */
 const K_FIGHTERS = 'vfc_fighters';
 
 /* ── Helpers ── */
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 
-function load(key, def) {
+function loadLocal(key, def) {
   try { return JSON.parse(localStorage.getItem(key)) ?? def; }
   catch { return def; }
 }
-function save(key, val) { localStorage.setItem(key, JSON.stringify(val)); }
+function saveLocal(key, val) { localStorage.setItem(key, JSON.stringify(val)); }
 
 const WC_LABELS = { sub165: 'Sub 165', '165to185': '165–185', '185plus': '185+' };
 
 function checkSession(key) { return sessionStorage.getItem(key) === '1'; }
 function setSession(key)   { sessionStorage.setItem(key, '1'); }
 
-function openModal(overlay)  { overlay.classList.add('open');    document.body.style.overflow = 'hidden'; }
-function closeModal(overlay) { overlay.classList.remove('open'); document.body.style.overflow = ''; }
+function openModal(o)  { o.classList.add('open');    document.body.style.overflow = 'hidden'; }
+function closeModal(o) { o.classList.remove('open'); document.body.style.overflow = ''; }
 
 /* ═══════════════════════════════════════════════
-   JSONBIN — read and write submissions
+   JSONBIN
 ═══════════════════════════════════════════════ */
-async function readSubmissions() {
+async function readBin() {
   try {
-    const res = await fetch(BIN_URL + '/latest', {
-      headers: { 'X-Master-Key': BIN_KEY }
-    });
+    const res  = await fetch(BIN_URL + '/latest', { headers: { 'X-Master-Key': BIN_KEY } });
     const json = await res.json();
-    return Array.isArray(json.record) ? json.record : [];
-  } catch { return []; }
+    return json.record || { submissions: [], rankings: {} };
+  } catch { return { submissions: [], rankings: {} }; }
 }
 
-async function writeSubmissions(list) {
+async function writeBin(data) {
   await fetch(BIN_URL, {
     method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Master-Key': BIN_KEY
-    },
-    body: JSON.stringify(list)
+    headers: { 'Content-Type': 'application/json', 'X-Master-Key': BIN_KEY },
+    body: JSON.stringify(data)
   });
 }
 
@@ -65,8 +59,8 @@ async function initSubmitPage() {
   if (!form) return;
 
   listEl.innerHTML = '<div class="no-submissions">Loading...</div>';
-  const existing = await readSubmissions();
-  renderSubmissions(listEl, existing);
+  const bin = await readBin();
+  renderSubmissions(listEl, bin.submissions || []);
 
   form.addEventListener('submit', async e => {
     e.preventDefault();
@@ -76,24 +70,25 @@ async function initSubmitPage() {
     const sport = $('sport') ? $('sport').value : '';
     if (!f1 || !f2 || !wc || !sport) return;
 
-    const current = await readSubmissions();
-    current.unshift({
+    const bin = await readBin();
+    bin.submissions = bin.submissions || [];
+    bin.submissions.unshift({
       fighter1: f1, fighter2: f2,
       wc, wcLabel: WC_LABELS[wc] || wc,
       sport, date: new Date().toLocaleDateString()
     });
-    await writeSubmissions(current);
+    await writeBin(bin);
 
     form.reset();
     successMsg.style.display = 'block';
     setTimeout(() => { successMsg.style.display = 'none'; }, 3500);
-    renderSubmissions(listEl, current);
+    renderSubmissions(listEl, bin.submissions);
   });
 }
 
 function renderSubmissions(container, list) {
   if (!container) return;
-  if (!list.length) {
+  if (!list || !list.length) {
     container.innerHTML = '<div class="no-submissions">No submissions yet</div>';
     return;
   }
@@ -109,30 +104,35 @@ function renderSubmissions(container, list) {
    RANKINGS PAGE
 ═══════════════════════════════════════════════ */
 const DEFAULT_RANKINGS = {
-  sub165:    { champ: {name:'',rec:''}, contenders:[{name:'',rec:''},{name:'',rec:''},{name:'',rec:''}], chuds:[{name:'',rec:''},{name:'',rec:''},{name:'',rec:''}] },
-  '165to185':{ champ: {name:'',rec:''}, contenders:[{name:'',rec:''},{name:'',rec:''},{name:'',rec:''}], chuds:[{name:'',rec:''},{name:'',rec:''},{name:'',rec:''}] },
-  '185plus': { champ: {name:'',rec:''}, contenders:[{name:'',rec:''},{name:'',rec:''},{name:'',rec:''}], chuds:[{name:'',rec:''},{name:'',rec:''},{name:'',rec:''}] },
+  sub165:     { champ:{name:'',rec:''}, contenders:[{name:'',rec:''},{name:'',rec:''},{name:'',rec:''}], chuds:[{name:'',rec:''},{name:'',rec:''},{name:'',rec:''}] },
+  '165to185': { champ:{name:'',rec:''}, contenders:[{name:'',rec:''},{name:'',rec:''},{name:'',rec:''}], chuds:[{name:'',rec:''},{name:'',rec:''},{name:'',rec:''}] },
+  '185plus':  { champ:{name:'',rec:''}, contenders:[{name:'',rec:''},{name:'',rec:''},{name:'',rec:''}], chuds:[{name:'',rec:''},{name:'',rec:''},{name:'',rec:''}] },
 };
 
 let rankingsEditing = false;
-let pendingSlot = null;
+let pendingSlot     = null;
 
-function initRankingsPage() {
+async function initRankingsPage() {
   const pwInput  = $('rankPwInput');
   const pwBtn    = $('rankPwBtn');
   const pwStatus = $('rankPwStatus');
   if (!pwBtn) return;
 
-  const data = load(K_RANKINGS, DEFAULT_RANKINGS);
-  renderRankings(data);
+  pwStatus.textContent = 'Loading...';
+  const bin      = await readBin();
+  const rankings = Object.keys(bin.rankings || {}).length ? bin.rankings : DEFAULT_RANKINGS;
+  renderRankings(rankings);
+  pwStatus.textContent = 'Locked';
 
   if (checkSession('rank_unlocked')) enableRankEdit(pwStatus, pwBtn);
 
-  pwBtn.addEventListener('click', () => {
+  pwBtn.addEventListener('click', async () => {
     if (rankingsEditing) {
-      const updated = collectRankings();
-      save(K_RANKINGS, updated);
-      renderRankings(updated);
+      pwStatus.textContent = 'Saving...';
+      const bin = await readBin();
+      bin.rankings = loadLocal('vfc_rankings_draft', DEFAULT_RANKINGS);
+      await writeBin(bin);
+      renderRankings(bin.rankings);
       disableRankEdit(pwStatus, pwBtn, pwInput);
     } else {
       if (pwInput.value === ADMIN_PASSWORD) {
@@ -158,18 +158,18 @@ function initRankingsPage() {
 
   slotSaveBtn.addEventListener('click', () => {
     if (!pendingSlot) return;
-    const name = $('slotName').value.trim();
-    const rec  = $('slotRecord').value.trim();
-    const data = load(K_RANKINGS, DEFAULT_RANKINGS);
-    const wc   = pendingSlot.wc;
-    if (!data[wc]) return;
+    const name  = $('slotName').value.trim();
+    const rec   = $('slotRecord').value.trim();
+    const draft = loadLocal('vfc_rankings_draft', DEFAULT_RANKINGS);
+    const wc    = pendingSlot.wc;
+    if (!draft[wc]) return;
 
-    if (pendingSlot.type === 'champ')          data[wc].champ = { name, rec };
-    else if (pendingSlot.type === 'contender') data[wc].contenders[pendingSlot.idx] = { name, rec };
-    else                                       data[wc].chuds[pendingSlot.idx] = { name, rec };
+    if (pendingSlot.type === 'champ')          draft[wc].champ = { name, rec };
+    else if (pendingSlot.type === 'contender') draft[wc].contenders[pendingSlot.idx] = { name, rec };
+    else                                       draft[wc].chuds[pendingSlot.idx] = { name, rec };
 
-    save(K_RANKINGS, data);
-    renderRankings(data);
+    saveLocal('vfc_rankings_draft', draft);
+    renderRankings(draft);
     closeModal(slotModal);
     pendingSlot = null;
   });
@@ -182,7 +182,10 @@ function enableRankEdit(statusEl, btn) {
   btn.textContent = 'SAVE & LOCK';
   btn.classList.add('active');
   document.body.classList.add('edit-mode');
-  attachSlotClicks();
+  readBin().then(b => {
+    saveLocal('vfc_rankings_draft', Object.keys(b.rankings||{}).length ? b.rankings : DEFAULT_RANKINGS);
+    attachSlotClicks();
+  });
 }
 
 function disableRankEdit(statusEl, btn, inputEl) {
@@ -200,34 +203,33 @@ function disableRankEdit(statusEl, btn, inputEl) {
 function attachSlotClicks() {
   const WCS = ['sub165','165to185','185plus'];
   WCS.forEach(wc => {
-    const champNameEl = $(`champ-${wc}-name`);
-    if (champNameEl) champNameEl.onclick = () => openSlotModal('champ', wc, 0);
+    const cn = $(`champ-${wc}-name`);
+    if (cn) cn.onclick = () => openSlotModal('champ', wc, 0);
     for (let i = 1; i <= 3; i++) {
       const cs = $(`${wc}-c${i}`);
-      if (cs) cs.querySelector('.rank-name').onclick = () => openSlotModal('contender', wc, i - 1);
+      if (cs) cs.querySelector('.rank-name').onclick = () => openSlotModal('contender', wc, i-1);
       const hs = $(`${wc}-h${i}`);
-      if (hs) hs.querySelector('.rank-name').onclick = () => openSlotModal('chud', wc, i - 1);
+      if (hs) hs.querySelector('.rank-name').onclick = () => openSlotModal('chud', wc, i-1);
     }
   });
 }
 
 function openSlotModal(type, wc, idx) {
-  const data   = load(K_RANKINGS, DEFAULT_RANKINGS);
-  const wcData = data[wc] || { champ:{name:'',rec:''}, contenders:[], chuds:[] };
+  const draft  = loadLocal('vfc_rankings_draft', DEFAULT_RANKINGS);
+  const wcData = draft[wc] || { champ:{name:'',rec:''}, contenders:[], chuds:[] };
 
-  let current = { name: '', rec: '' };
-  if (type === 'champ')          current = wcData.champ;
-  else if (type === 'contender') current = wcData.contenders[idx] || current;
-  else                           current = wcData.chuds[idx] || current;
+  let cur = { name:'', rec:'' };
+  if (type === 'champ')          cur = wcData.champ;
+  else if (type === 'contender') cur = wcData.contenders[idx] || cur;
+  else                           cur = wcData.chuds[idx] || cur;
 
   $('slotModalTitle').textContent = type === 'champ'
     ? `EDIT CHAMPION — ${WC_LABELS[wc]}`
     : `EDIT ${type.toUpperCase()} #${idx+1} — ${WC_LABELS[wc]}`;
 
-  $('slotName').value   = current.name || '';
-  $('slotRecord').value = current.rec  || '';
+  $('slotName').value   = cur.name || '';
+  $('slotRecord').value = cur.rec  || '';
   pendingSlot = { type, wc, idx };
-
   openModal($('slotModal'));
   $('slotName').focus();
 }
@@ -236,7 +238,6 @@ function renderRankings(data) {
   const WCS = ['sub165','165to185','185plus'];
   WCS.forEach(wc => {
     const wcData = data[wc] || DEFAULT_RANKINGS[wc];
-
     const nameEl = $(`champ-${wc}-name`);
     const recEl  = $(`champ-${wc}-rec`);
     if (nameEl) { nameEl.textContent = wcData.champ.name || 'VACANT'; nameEl.classList.toggle('champ-vacant', !wcData.champ.name); }
@@ -264,11 +265,8 @@ function renderRankings(data) {
       slot.classList.toggle('chud',       !!f.name);
     });
   });
-
   if (rankingsEditing) attachSlotClicks();
 }
-
-function collectRankings() { return load(K_RANKINGS, DEFAULT_RANKINGS); }
 
 /* ═══════════════════════════════════════════════
    FIGHTER PROFILES PAGE
@@ -288,7 +286,6 @@ function initProfilesPage() {
   if (!pwBtn) return;
 
   renderFighters(grid);
-
   if (checkSession('prof_unlocked')) enableProfEdit(pwStatus, pwBtn, addBtn);
 
   pwBtn.addEventListener('click', () => {
@@ -307,7 +304,6 @@ function initProfilesPage() {
     }
   });
   pwInput.addEventListener('keydown', e => { if (e.key === 'Enter') pwBtn.click(); });
-
   addBtn.addEventListener('click', () => openEditModal(null));
 
   const bioModal = $('bioModal');
@@ -331,11 +327,10 @@ function initProfilesPage() {
   });
 
   $('editSaveBtn').addEventListener('click', saveFighter);
-
   $('editDeleteBtn').addEventListener('click', () => {
     if (!editingFighterId) return;
     if (!confirm('Delete this fighter?')) return;
-    save(K_FIGHTERS, load(K_FIGHTERS, []).filter(f => f.id !== editingFighterId));
+    saveLocal(K_FIGHTERS, loadLocal(K_FIGHTERS, []).filter(f => f.id !== editingFighterId));
     closeModal(editModal);
     renderFighters(grid);
   });
@@ -365,7 +360,7 @@ function disableProfEdit(statusEl, btn, inputEl, addBtn) {
 
 function renderFighters(grid) {
   if (!grid) return;
-  const fighters = load(K_FIGHTERS, []);
+  const fighters = loadLocal(K_FIGHTERS, []);
   if (!fighters.length) {
     grid.innerHTML = '<div class="no-fighters">No fighters on the roster yet</div>';
     return;
@@ -391,7 +386,7 @@ function renderFighters(grid) {
 }
 
 function openBioModal(id) {
-  const f = load(K_FIGHTERS, []).find(x => x.id === id);
+  const f = loadLocal(K_FIGHTERS, []).find(x => x.id === id);
   if (!f) return;
   $('bioPhoto').innerHTML     = f.photo ? `<img src="${f.photo}" alt="${esc(f.name)}" />` : '🥊';
   $('bioName').textContent    = f.name;
@@ -402,11 +397,9 @@ function openBioModal(id) {
 }
 
 function openEditModal(id) {
-  editingFighterId   = id;
-  pendingPhotoBase64 = null;
-
+  editingFighterId = id; pendingPhotoBase64 = null;
   if (id) {
-    const f = load(K_FIGHTERS, []).find(x => x.id === id);
+    const f = loadLocal(K_FIGHTERS, []).find(x => x.id === id);
     if (!f) return;
     $('editModalTitle').textContent  = 'EDIT FIGHTER';
     $('editName').value              = f.name;
@@ -418,16 +411,12 @@ function openEditModal(id) {
     $('editDeleteBtn').style.display = '';
   } else {
     $('editModalTitle').textContent  = 'ADD FIGHTER';
-    $('editName').value              = '';
-    $('editWeightClass').value       = '';
-    $('editRecord').value            = '';
-    $('editBio').value               = '';
+    $('editName').value = $('editWeightClass').value = $('editRecord').value = $('editBio').value = '';
     $('editPhotoPreview').innerHTML  = '🥊';
     $('editPhotoLabel').textContent  = 'Click to upload photo';
     $('editPhotoFile').value         = '';
     $('editDeleteBtn').style.display = 'none';
   }
-
   openModal($('editFighterModal'));
 }
 
@@ -437,8 +426,7 @@ function saveFighter() {
   const rec  = $('editRecord').value.trim();
   const bio  = $('editBio').value.trim();
   if (!name || !wc) { alert('Name and weight class are required.'); return; }
-
-  const fighters = load(K_FIGHTERS, []);
+  const fighters = loadLocal(K_FIGHTERS, []);
   if (editingFighterId) {
     const idx = fighters.findIndex(f => f.id === editingFighterId);
     if (idx === -1) return;
@@ -447,15 +435,12 @@ function saveFighter() {
   } else {
     fighters.push({ id: uid(), name, weightClass: wc, record: rec, bio, photo: pendingPhotoBase64 || '' });
   }
-
-  save(K_FIGHTERS, fighters);
+  saveLocal(K_FIGHTERS, fighters);
   closeModal($('editFighterModal'));
   renderFighters($('fightersGrid'));
 }
 
-/* ═══════════════════════════════════════════════
-   BOOT
-═══════════════════════════════════════════════ */
+/* ── Boot ── */
 document.addEventListener('DOMContentLoaded', () => {
   initSubmitPage();
   initRankingsPage();
