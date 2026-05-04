@@ -1,14 +1,17 @@
 /* ═══════════════════════════════════════════════
    VFC — Vop Fight Club  |  app.js
-   ═══════════════════════════════════════════════
    CHANGE THE PASSWORD BELOW (line 8):
 */
 const ADMIN_PASSWORD = 'VFC2025';
 
+/* ── JSONBin config ── */
+const BIN_ID  = '69f92625aaba8821976fd7df';
+const BIN_KEY = '$2a$10$anaNujlYjKmXfp6C5dVIP.QJHkb8lo0lioPvVaP2qlk5K4hU4JX3i';
+const BIN_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
+
 /* ── Storage keys ── */
-const K_RANKINGS    = 'vfc_rankings_v2';
-const K_SUBMISSIONS = 'vfc_submissions';
-const K_FIGHTERS    = 'vfc_fighters';
+const K_RANKINGS = 'vfc_rankings_v2';
+const K_FIGHTERS = 'vfc_fighters';
 
 /* ── Helpers ── */
 const $ = id => document.getElementById(id);
@@ -29,17 +32,43 @@ function openModal(overlay)  { overlay.classList.add('open');    document.body.s
 function closeModal(overlay) { overlay.classList.remove('open'); document.body.style.overflow = ''; }
 
 /* ═══════════════════════════════════════════════
+   JSONBIN — read and write submissions
+═══════════════════════════════════════════════ */
+async function readSubmissions() {
+  try {
+    const res = await fetch(BIN_URL + '/latest', {
+      headers: { 'X-Master-Key': BIN_KEY }
+    });
+    const json = await res.json();
+    return Array.isArray(json.record) ? json.record : [];
+  } catch { return []; }
+}
+
+async function writeSubmissions(list) {
+  await fetch(BIN_URL, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Master-Key': BIN_KEY
+    },
+    body: JSON.stringify(list)
+  });
+}
+
+/* ═══════════════════════════════════════════════
    SUBMIT PAGE
 ═══════════════════════════════════════════════ */
-function initSubmitPage() {
+async function initSubmitPage() {
   const form       = $('fightForm');
   const successMsg = $('successMsg');
   const listEl     = $('submissionsList');
   if (!form) return;
 
-  renderSubmissions(listEl);
+  listEl.innerHTML = '<div class="no-submissions">Loading...</div>';
+  const existing = await readSubmissions();
+  renderSubmissions(listEl, existing);
 
-  form.addEventListener('submit', e => {
+  form.addEventListener('submit', async e => {
     e.preventDefault();
     const f1    = $('fighter1').value.trim();
     const f2    = $('fighter2').value.trim();
@@ -47,20 +76,23 @@ function initSubmitPage() {
     const sport = $('sport') ? $('sport').value : '';
     if (!f1 || !f2 || !wc || !sport) return;
 
-    const list = load(K_SUBMISSIONS, []);
-    list.unshift({ fighter1: f1, fighter2: f2, wc, wcLabel: WC_LABELS[wc] || wc, sport, date: new Date().toLocaleDateString() });
-    save(K_SUBMISSIONS, list);
+    const current = await readSubmissions();
+    current.unshift({
+      fighter1: f1, fighter2: f2,
+      wc, wcLabel: WC_LABELS[wc] || wc,
+      sport, date: new Date().toLocaleDateString()
+    });
+    await writeSubmissions(current);
 
     form.reset();
     successMsg.style.display = 'block';
     setTimeout(() => { successMsg.style.display = 'none'; }, 3500);
-    renderSubmissions(listEl);
+    renderSubmissions(listEl, current);
   });
 }
 
-function renderSubmissions(container) {
+function renderSubmissions(container, list) {
   if (!container) return;
-  const list = load(K_SUBMISSIONS, []);
   if (!list.length) {
     container.innerHTML = '<div class="no-submissions">No submissions yet</div>';
     return;
@@ -94,9 +126,7 @@ function initRankingsPage() {
   const data = load(K_RANKINGS, DEFAULT_RANKINGS);
   renderRankings(data);
 
-  if (checkSession('rank_unlocked')) {
-    enableRankEdit(pwStatus, pwBtn);
-  }
+  if (checkSession('rank_unlocked')) enableRankEdit(pwStatus, pwBtn);
 
   pwBtn.addEventListener('click', () => {
     if (rankingsEditing) {
@@ -105,8 +135,7 @@ function initRankingsPage() {
       renderRankings(updated);
       disableRankEdit(pwStatus, pwBtn, pwInput);
     } else {
-      const val = pwInput.value;
-      if (val === ADMIN_PASSWORD) {
+      if (pwInput.value === ADMIN_PASSWORD) {
         setSession('rank_unlocked');
         enableRankEdit(pwStatus, pwBtn);
         pwInput.value = '';
@@ -135,7 +164,7 @@ function initRankingsPage() {
     const wc   = pendingSlot.wc;
     if (!data[wc]) return;
 
-    if (pendingSlot.type === 'champ')         data[wc].champ = { name, rec };
+    if (pendingSlot.type === 'champ')          data[wc].champ = { name, rec };
     else if (pendingSlot.type === 'contender') data[wc].contenders[pendingSlot.idx] = { name, rec };
     else                                       data[wc].chuds[pendingSlot.idx] = { name, rec };
 
@@ -173,7 +202,6 @@ function attachSlotClicks() {
   WCS.forEach(wc => {
     const champNameEl = $(`champ-${wc}-name`);
     if (champNameEl) champNameEl.onclick = () => openSlotModal('champ', wc, 0);
-
     for (let i = 1; i <= 3; i++) {
       const cs = $(`${wc}-c${i}`);
       if (cs) cs.querySelector('.rank-name').onclick = () => openSlotModal('contender', wc, i - 1);
@@ -365,7 +393,7 @@ function renderFighters(grid) {
 function openBioModal(id) {
   const f = load(K_FIGHTERS, []).find(x => x.id === id);
   if (!f) return;
-  $('bioPhoto').innerHTML = f.photo ? `<img src="${f.photo}" alt="${esc(f.name)}" />` : '🥊';
+  $('bioPhoto').innerHTML     = f.photo ? `<img src="${f.photo}" alt="${esc(f.name)}" />` : '🥊';
   $('bioName').textContent    = f.name;
   $('bioWc').textContent      = f.weightClass;
   $('bioRec').textContent     = f.record || '0-0';
@@ -380,13 +408,13 @@ function openEditModal(id) {
   if (id) {
     const f = load(K_FIGHTERS, []).find(x => x.id === id);
     if (!f) return;
-    $('editModalTitle').textContent = 'EDIT FIGHTER';
-    $('editName').value        = f.name;
-    $('editWeightClass').value = f.weightClass;
-    $('editRecord').value      = f.record || '';
-    $('editBio').value         = f.bio    || '';
-    $('editPhotoPreview').innerHTML = f.photo ? `<img src="${f.photo}" alt="preview" />` : '🥊';
-    $('editPhotoLabel').textContent = f.photo ? 'Change photo' : 'Click to upload photo';
+    $('editModalTitle').textContent  = 'EDIT FIGHTER';
+    $('editName').value              = f.name;
+    $('editWeightClass').value       = f.weightClass;
+    $('editRecord').value            = f.record || '';
+    $('editBio').value               = f.bio    || '';
+    $('editPhotoPreview').innerHTML  = f.photo ? `<img src="${f.photo}" alt="preview" />` : '🥊';
+    $('editPhotoLabel').textContent  = f.photo ? 'Change photo' : 'Click to upload photo';
     $('editDeleteBtn').style.display = '';
   } else {
     $('editModalTitle').textContent  = 'ADD FIGHTER';
