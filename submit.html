@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Submit Fight — VFC</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <nav class="navbar">
+    <div class="nav-logo">VFC</div>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="submit.html" class="active">Submit Fight</a></li>
+      <li><a href="rankings.html">Rankings</a></li>
+      <li><a href="profiles.html">Fighters</a></li>
+    </ul>
+  </nav>
+
+  <main class="page-main">
+    <div class="form-box">
+      <div class="form-title">SUBMIT FIGHT</div>
+      <div class="form-sub">Register a matchup for VFC consideration</div>
+
+      <form id="fightForm" novalidate>
+        <div class="form-group">
+          <label for="fighter1">Your Name</label>
+          <input type="text" id="fighter1" placeholder="Your name" autocomplete="off" required />
+        </div>
+
+        <div class="form-group">
+          <label for="weightClass">Weight Class</label>
+          <select id="weightClass" required>
+            <option value="" disabled selected>Select weight class</option>
+            <option value="sub165">Sub 165</option>
+            <option value="165to185">165 – 185</option>
+            <option value="185plus">185 and Above</option>
+          </select>
+        </div>
+
+        <div class="form-divider">VS</div>
+
+        <div class="form-group">
+          <label for="fighter2">Opponent Name</label>
+          <input type="text" id="fighter2" placeholder="Opponent's name" autocomplete="off" required />
+        </div>
+
+        <button type="submit" class="btn-submit">Submit Matchup</button>
+      </form>
+
+      <div class="success-msg" id="successMsg">✓ Matchup submitted. We'll be in touch.</div>
+    </div>
+  </main>
+
+  <section class="submissions-section">
+    <div class="submissions-title">PENDING SUBMISSIONS</div>
+    <div id="submissionsList"></div>
+  </section>
+
+  <footer class="footer">VFC &copy; 2025 &mdash; Vop Fight Club</footer>
+  <script src="app.js"></script>
+</body>
+</html>

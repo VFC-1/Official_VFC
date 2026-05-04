@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rankings — VFC</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <nav class="navbar">
+    <div class="nav-logo">VFC</div>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="submit.html">Submit Fight</a></li>
+      <li><a href="rankings.html" class="active">Rankings</a></li>
+      <li><a href="profiles.html">Fighters</a></li>
+    </ul>
+  </nav>
+
+  <main class="rankings-main">
+
+    <div class="rankings-header">
+      <h1>VFC RANKINGS</h1>
+      <p>VOP FIGHT CLUB &mdash; EST. 2025</p>
+    </div>
+
+    <!-- Password bar -->
+    <div class="pw-bar">
+      <input class="pw-input" type="password" id="rankPwInput" placeholder="Admin password" />
+      <button class="pw-btn" id="rankPwBtn">UNLOCK</button>
+      <span class="pw-status" id="rankPwStatus">Locked</span>
+    </div>
+
+    <!-- ── SUB 165 ── -->
+    <div class="weight-class">
+      <div class="weight-class-header">SUB 165</div>
+      <div class="champion-row">
+        <div class="champion-card">
+          <span class="champ-crown">👑</span>
+          <div class="champ-label">CHAMPION</div>
+          <div class="champ-name editable" id="champ-sub165-name">VACANT</div>
+          <div class="champ-record" id="champ-sub165-rec"></div>
+          <span class="champ-belt">🥇🏆🥇</span>
+        </div>
+      </div>
+      <div class="rankings-columns">
+        <div>
+          <div class="rank-col-title contenders">CONTENDERS</div>
+          <div class="rank-slots">
+            <div class="rank-slot rank-empty" id="sub165-c1"><div class="rank-num">#1</div><div class="rank-name editable">—</div><div class="rank-rec"></div></div>
+            <div class="rank-slot rank-empty" id="sub165-c2"><div class="rank-num">#2</div><div class="rank-name editable">—</div><div class="rank-rec"></div></div>
+            <div class="rank-slot rank-empty" id="sub165-c3"><div class="rank-num">#3</div><div class="rank-name editable">—</div><div class="rank-rec"></div></div>
+          </div>
+        </div>
+        <div>
+          <div class="rank-col-title chuds">CHUDS</div>
+          <div class="rank-slots">
+            <div class="rank-slot rank-empty" id="sub165-h1"><div class="rank-num">#1</div><div class="rank-name editable">—</div><div class="rank-rec"></div></div>
+            <div class="rank-slot rank-empty" id="sub165-h2"><div class="rank-num">#2</div><div class="rank-name editable">—</div><div class="rank-rec"></div></div>
+            <div class="rank-slot rank-empty" id="sub165-h3"><div class="rank-num">#3</div><div class="rank-name editable">—</div><div class="rank-rec"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 165–185 ── -->
+    <div class="weight-class">
+      <div class="weight-class-header">165 – 185</div>
+      <div class="champion-row">
+        <div class="champion-card">
+          <span class="champ-crown">👑</span>
+          <div class="champ-label">CHAMPION</div>
+          <div class="champ-name editable" id="champ-165to185-name">VACANT</div>
+          <div class="champ-record" id="champ-165to185-rec"></div>
+          <span class="champ-belt">🥇🏆🥇</span>
+        </div>
+      </div>
+      <div class="rankings-columns">
+        <div>
+          <div class="rank-col-title contenders">CONTENDERS</div>
+          <div class="rank-slots">
+            <div class="rank-slot rank-empty" id="165to185-c1"><div class="rank-num">#1</div><div class="rank-name editable">—</div><div class="rank-rec"></div></div>
+            <div class="rank-slot rank-empty" id="165to185-c2"><div class="rank-num">#2</div><div class="rank-name editable">—</div><div class="rank-rec"></div></div>
+            <div class="rank-slot rank-empty" id="165to185-c3"><div class="rank-num">#3</div><div class="rank-name editable">—</div><div class="rank-rec"></div></div>
+          </div>
+        </div>
+        <div>
+          <div class="rank-col-title chuds">CHUDS</div>
+          <div class="rank-slots">
+            <div class="rank-slot rank-empty" id="165to185-h1"><div class="rank-num">#1</div><div class="rank-name editable">—</div><div class="rank-rec"></div></div>
+            <div class="rank-slot rank-empty" id="165to185-h2"><div class="rank-num">#2</div><div class="rank-name editable">—</div><div class="rank-rec"></div></div>
+            <div class="rank-slot rank-empty" id="165to185-h3"><div class="rank-num">#3</div><div class="rank-name editable">—</div><div class="rank-rec"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 185+ ── -->
+    <div class="weight-class">
+      <div class="weight-class-header">185 AND ABOVE</div>
+      <div class="champion-row">
+        <div class="champion-card">
+          <span class="champ-crown">👑</span>
+          <div class="champ-label">CHAMPION</div>
+          <div class="champ-name editable" id="champ-185plus-name">VACANT</div>
+          <div class="champ-record" id="champ-185plus-rec"></div>
+          <span class="champ-belt">🥇🏆🥇</span>
+        </div>
+      </div>
+      <div class="rankings-columns">
+        <div>
+          <div class="rank-col-title contenders">CONTENDERS</div>
+          <div class="rank-slots">
+            <div class="rank-slot rank-empty" id="185plus-c1"><div class="rank-num">#1</div><div class="rank-name editable">—</div><div class="rank-rec"></div></div>
+            <div class="rank-slot rank-empty" id="185plus-c2"><div class="rank-num">#2</div><div class="rank-name editable">—</div><div class="rank-rec"></div></div>
+            <div class="rank-slot rank-empty" id="185plus-c3"><div class="rank-num">#3</div><div class="rank-name editable">—</div><div class="rank-rec"></div></div>
+          </div>
+        </div>
+        <div>
+          <div class="rank-col-title chuds">CHUDS</div>
+          <div class="rank-slots">
+            <div class="rank-slot rank-empty" id="185plus-h1"><div class="rank-num">#1</div><div class="rank-name editable">—</div><div class="rank-rec"></div></div>
+            <div class="rank-slot rank-empty" id="185plus-h2"><div class="rank-num">#2</div><div class="rank-name editable">—</div><div class="rank-rec"></div></div>
+            <div class="rank-slot rank-empty" id="185plus-h3"><div class="rank-num">#3</div><div class="rank-name editable">—</div><div class="rank-rec"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <footer class="footer">VFC &copy; 2025 &mdash; Vop Fight Club</footer>
+
+  <!-- Edit slot modal -->
+  <div class="modal-overlay" id="slotModal">
+    <div class="modal" style="max-width:360px">
+      <div class="modal-header">
+        <span class="modal-title" id="slotModalTitle">EDIT SLOT</span>
+        <button class="modal-close" id="slotModalClose">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="edit-form-group">
+          <label>Fighter Name</label>
+          <input type="text" id="slotName" placeholder="Name (leave blank to clear)" autocomplete="off" />
+        </div>
+        <div class="edit-form-group">
+          <label>Record (e.g. 5-2)</label>
+          <input type="text" id="slotRecord" placeholder="W-L" autocomplete="off" />
+        </div>
+        <div class="modal-btns">
+          <button class="btn-save" id="slotSaveBtn">SAVE</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

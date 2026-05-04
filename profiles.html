@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fighters — VFC</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <nav class="navbar">
+    <div class="nav-logo">VFC</div>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="submit.html">Submit Fight</a></li>
+      <li><a href="rankings.html">Rankings</a></li>
+      <li><a href="profiles.html" class="active">Fighters</a></li>
+    </ul>
+  </nav>
+
+  <main class="profiles-main">
+
+    <div class="profiles-header">
+      <div>
+        <h1>VFC FIGHTERS</h1>
+        <p>The official VFC roster</p>
+      </div>
+      <div style="display:flex;align-items:center;gap:.8rem;flex-wrap:wrap;">
+        <div class="ph-pw-bar">
+          <input class="pw-input" type="password" id="profPwInput" placeholder="Admin password" />
+          <button class="pw-btn" id="profPwBtn">UNLOCK</button>
+          <span class="pw-status" id="profPwStatus">Locked</span>
+        </div>
+        <button class="btn-add" id="addFighterBtn">+ ADD FIGHTER</button>
+      </div>
+    </div>
+
+    <div class="fighters-grid" id="fightersGrid">
+      <!-- populated by JS -->
+    </div>
+
+  </main>
+
+  <footer class="footer">VFC &copy; 2025 &mdash; Vop Fight Club</footer>
+
+  <!-- Bio / View modal -->
+  <div class="modal-overlay" id="bioModal">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="modal-title">FIGHTER BIO</span>
+        <button class="modal-close" id="bioModalClose">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-photo" id="bioPhoto">🥊</div>
+        <div class="modal-name" id="bioName"></div>
+        <div class="modal-meta">
+          <span><strong id="bioWc"></strong> &nbsp;|&nbsp; <strong id="bioRec"></strong></span>
+        </div>
+        <div class="modal-bio-text" id="bioBioText"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add / Edit fighter modal -->
+  <div class="modal-overlay" id="editFighterModal">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="modal-title" id="editModalTitle">ADD FIGHTER</span>
+        <button class="modal-close" id="editModalClose">&times;</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="editFighterId" />
+
+        <div class="edit-form-group">
+          <label>Photo</label>
+          <label class="photo-upload-label">
+            <div class="modal-preview" id="editPhotoPreview">🥊</div>
+            <span id="editPhotoLabel">Click to upload photo</span>
+            <input type="file" id="editPhotoFile" accept="image/*" />
+          </label>
+        </div>
+
+        <div class="edit-form-group">
+          <label>Fighter Name</label>
+          <input type="text" id="editName" placeholder="Full name" autocomplete="off" />
+        </div>
+
+        <div class="edit-form-group">
+          <label>Weight Class</label>
+          <select id="editWeightClass">
+            <option value="" disabled selected>Select weight class</option>
+            <option value="Sub 165">Sub 165</option>
+            <option value="165–185">165 – 185</option>
+            <option value="185+">185 and Above</option>
+          </select>
+        </div>
+
+        <div class="edit-form-group">
+          <label>Record (W-L)</label>
+          <input type="text" id="editRecord" placeholder="e.g. 5-2" autocomplete="off" />
+        </div>
+
+        <div class="edit-form-group">
+          <label>Bio</label>
+          <textarea id="editBio" placeholder="Fighter bio / notes..."></textarea>
+        </div>
+
+        <div class="modal-btns">
+          <button class="btn-save" id="editSaveBtn">SAVE FIGHTER</button>
+          <button class="btn-delete" id="editDeleteBtn">DELETE</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
