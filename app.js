@@ -4,10 +4,8 @@
 */
 const ADMIN_PASSWORD = 'VFC2025';
 
-/* ── JSONBin config ── */
-const BIN_ID  = '69f9289b856a682189a7f4b3';
-const BIN_KEY = '$2a$10$anaNujlYjKmXfp6C5dVIP.QJHkb8lo0lioPvVaP2qlk5K4hU4JX3i';
-const BIN_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
+/* ── Firebase config ── */
+const DB = 'https://vfc1-1ea94-default-rtdb.firebaseio.com';
 
 /* ── Local storage (fighters only) ── */
 const K_FIGHTERS = 'vfc_fighters';
@@ -31,21 +29,39 @@ function openModal(o)  { o.classList.add('open');    document.body.style.overflo
 function closeModal(o) { o.classList.remove('open'); document.body.style.overflow = ''; }
 
 /* ═══════════════════════════════════════════════
-   JSONBIN
+   FIREBASE — submissions
 ═══════════════════════════════════════════════ */
-async function readBin() {
+async function readSubmissions() {
   try {
-    const res  = await fetch(BIN_URL + '/latest', { headers: { 'X-Master-Key': BIN_KEY } });
-    const json = await res.json();
-    return json.record || { submissions: [], rankings: {} };
-  } catch { return { submissions: [], rankings: {} }; }
+    const res  = await fetch(`${DB}/submissions.json`);
+    const data = await res.json();
+    if (!data) return [];
+    return Array.isArray(data) ? data : Object.values(data);
+  } catch { return []; }
 }
 
-async function writeBin(data) {
-  await fetch(BIN_URL, {
+async function writeSubmissions(list) {
+  await fetch(`${DB}/submissions.json`, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json', 'X-Master-Key': BIN_KEY },
-    body: JSON.stringify(data)
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(list)
+  });
+}
+
+/* ── FIREBASE — rankings ── */
+async function readRankings() {
+  try {
+    const res  = await fetch(`${DB}/rankings.json`);
+    const data = await res.json();
+    return data || {};
+  } catch { return {}; }
+}
+
+async function writeRankings(rankings) {
+  await fetch(`${DB}/rankings.json`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(rankings)
   });
 }
 
@@ -59,8 +75,8 @@ async function initSubmitPage() {
   if (!form) return;
 
   listEl.innerHTML = '<div class="no-submissions">Loading...</div>';
-  const bin = await readBin();
-  renderSubmissions(listEl, bin.submissions || []);
+  const subs = await readSubmissions();
+  renderSubmissions(listEl, subs);
 
   form.addEventListener('submit', async e => {
     e.preventDefault();
@@ -70,19 +86,18 @@ async function initSubmitPage() {
     const sport = $('sport') ? $('sport').value : '';
     if (!f1 || !f2 || !wc || !sport) return;
 
-    const bin = await readBin();
-    bin.submissions = bin.submissions || [];
-    bin.submissions.unshift({
+    const current = await readSubmissions();
+    current.unshift({
       fighter1: f1, fighter2: f2,
       wc, wcLabel: WC_LABELS[wc] || wc,
       sport, date: new Date().toLocaleDateString()
     });
-    await writeBin(bin);
+    await writeSubmissions(current);
 
     form.reset();
     successMsg.style.display = 'block';
     setTimeout(() => { successMsg.style.display = 'none'; }, 3500);
-    renderSubmissions(listEl, bin.submissions);
+    renderSubmissions(listEl, current);
   });
 }
 
@@ -119,8 +134,8 @@ async function initRankingsPage() {
   if (!pwBtn) return;
 
   pwStatus.textContent = 'Loading...';
-  const bin      = await readBin();
-  const rankings = Object.keys(bin.rankings || {}).length ? bin.rankings : DEFAULT_RANKINGS;
+  const data     = await readRankings();
+  const rankings = Object.keys(data).length ? data : DEFAULT_RANKINGS;
   renderRankings(rankings);
   pwStatus.textContent = 'Locked';
 
@@ -129,10 +144,9 @@ async function initRankingsPage() {
   pwBtn.addEventListener('click', async () => {
     if (rankingsEditing) {
       pwStatus.textContent = 'Saving...';
-      const bin = await readBin();
-      bin.rankings = loadLocal('vfc_rankings_draft', DEFAULT_RANKINGS);
-      await writeBin(bin);
-      renderRankings(bin.rankings);
+      const draft = loadLocal('vfc_rankings_draft', DEFAULT_RANKINGS);
+      await writeRankings(draft);
+      renderRankings(draft);
       disableRankEdit(pwStatus, pwBtn, pwInput);
     } else {
       if (pwInput.value === ADMIN_PASSWORD) {
@@ -175,17 +189,16 @@ async function initRankingsPage() {
   });
 }
 
-function enableRankEdit(statusEl, btn) {
+async function enableRankEdit(statusEl, btn) {
   rankingsEditing = true;
   statusEl.textContent = 'Editing — click slots to update';
   statusEl.className = 'pw-status ok';
   btn.textContent = 'SAVE & LOCK';
   btn.classList.add('active');
   document.body.classList.add('edit-mode');
-  readBin().then(b => {
-    saveLocal('vfc_rankings_draft', Object.keys(b.rankings||{}).length ? b.rankings : DEFAULT_RANKINGS);
-    attachSlotClicks();
-  });
+  const data = await readRankings();
+  saveLocal('vfc_rankings_draft', Object.keys(data).length ? data : DEFAULT_RANKINGS);
+  attachSlotClicks();
 }
 
 function disableRankEdit(statusEl, btn, inputEl) {
