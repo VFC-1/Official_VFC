@@ -1,81 +1,71 @@
 /* ═══════════════════════════════════════════════
-   VFC — Vop Fight Club  |  app.js
-   CHANGE THE PASSWORD BELOW:
-*/
+   VFC — app.js  |  Change password on line 5
+═══════════════════════════════════════════════ */
 const ADMIN_PASSWORD = 'VFC2025';
-
-/* ── Firebase config ── */
 const DB = 'https://vfc1-1ea94-default-rtdb.firebaseio.com';
 
-/* ── Local storage (fighters only) ── */
-const K_FIGHTERS = 'vfc_fighters';
-
-/* ── Helpers ── */
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const WC_LABELS = { sub165:'Sub 165','165to185':'165–185','185plus':'185+' };
 
-function loadLocal(key, def) {
-  try { return JSON.parse(localStorage.getItem(key)) ?? def; }
-  catch { return def; }
-}
-function saveLocal(key, val) { localStorage.setItem(key, JSON.stringify(val)); }
+function checkSession(k) { return sessionStorage.getItem(k) === '1'; }
+function setSession(k)   { sessionStorage.setItem(k, '1'); }
+function openModal(o)    { o.classList.add('open');    document.body.style.overflow='hidden'; }
+function closeModal(o)   { o.classList.remove('open'); document.body.style.overflow=''; }
 
-const WC_LABELS = { sub165: 'Sub 165', '165to185': '165–185', '185plus': '185+' };
-
-function checkSession(key) { return sessionStorage.getItem(key) === '1'; }
-function setSession(key)   { sessionStorage.setItem(key, '1'); }
-
-function openModal(o)  { o.classList.add('open');    document.body.style.overflow = 'hidden'; }
-function closeModal(o) { o.classList.remove('open'); document.body.style.overflow = ''; }
-
-/* ═══════════════════════════════════════════════
-   FIREBASE — submissions
-═══════════════════════════════════════════════ */
-async function readSubmissions() {
+/* ── Firebase helpers ── */
+async function fbGet(path) {
   try {
-    const res  = await fetch(`${DB}/submissions.json`);
-    const data = await res.json();
-    if (!data) return [];
-    return Array.isArray(data) ? data : Object.values(data);
-  } catch { return []; }
+    const r = await fetch(`${DB}/${path}.json`);
+    return await r.json();
+  } catch { return null; }
 }
-
-async function writeSubmissions(list) {
-  await fetch(`${DB}/submissions.json`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(list)
-  });
-}
-
-/* ── FIREBASE — rankings ── */
-async function readRankings() {
+async function fbSet(path, data) {
   try {
-    const res  = await fetch(`${DB}/rankings.json`);
-    const data = await res.json();
-    return data || {};
-  } catch { return {}; }
+    await fetch(`${DB}/${path}.json`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+  } catch { console.error('write failed:', path); }
 }
 
-async function writeRankings(rankings) {
-  await fetch(`${DB}/rankings.json`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(rankings)
+/* Firebase turns arrays into objects — this fixes that */
+function toArr(val, len) {
+  if (!val) return Array(len).fill(null).map(() => ({ name:'', rec:'' }));
+  if (Array.isArray(val)) return val;
+  return Object.values(val);
+}
+
+function normalizeRankings(data) {
+  const WCS = ['sub165','165to185','185plus'];
+  const out = {};
+  WCS.forEach(wc => {
+    const d = (data && data[wc]) ? data[wc] : {};
+    out[wc] = {
+      champ:      d.champ || { name:'', rec:'' },
+      contenders: toArr(d.contenders, 3),
+      chuds:      toArr(d.chuds, 3),
+    };
   });
+  return out;
+}
+
+function normalizeFighters(data) {
+  if (!data) return [];
+  if (Array.isArray(data)) return data;
+  return Object.values(data);
 }
 
 /* ═══════════════════════════════════════════════
    SUBMIT PAGE
 ═══════════════════════════════════════════════ */
 async function initSubmitPage() {
-  const form       = $('fightForm');
-  const successMsg = $('successMsg');
-  const listEl     = $('submissionsList');
+  const form = $('fightForm'), successMsg = $('successMsg'), listEl = $('submissionsList');
   if (!form) return;
 
   listEl.innerHTML = '<div class="no-submissions">Loading...</div>';
-  const subs = await readSubmissions();
+  const subs = toArr(await fbGet('submissions'), 0).filter(Boolean);
   renderSubmissions(listEl, subs);
 
   form.addEventListener('submit', async e => {
@@ -86,13 +76,9 @@ async function initSubmitPage() {
     const sport = $('sport') ? $('sport').value : '';
     if (!f1 || !f2 || !wc || !sport) return;
 
-    const current = await readSubmissions();
-    current.unshift({
-      fighter1: f1, fighter2: f2,
-      wc, wcLabel: WC_LABELS[wc] || wc,
-      sport, date: new Date().toLocaleDateString()
-    });
-    await writeSubmissions(current);
+    const current = toArr(await fbGet('submissions'), 0).filter(Boolean);
+    current.unshift({ fighter1:f1, fighter2:f2, wc, wcLabel:WC_LABELS[wc]||wc, sport, date:new Date().toLocaleDateString() });
+    await fbSet('submissions', current);
 
     form.reset();
     successMsg.style.display = 'block';
@@ -103,14 +89,11 @@ async function initSubmitPage() {
 
 function renderSubmissions(container, list) {
   if (!container) return;
-  if (!list || !list.length) {
-    container.innerHTML = '<div class="no-submissions">No submissions yet</div>';
-    return;
-  }
+  if (!list || !list.length) { container.innerHTML = '<div class="no-submissions">No submissions yet</div>'; return; }
   container.innerHTML = list.map(s =>
     `<div class="submission-item">
        <span class="fighters">${esc(s.fighter1)} vs ${esc(s.fighter2)}</span>
-       <span class="weight">${esc(s.wcLabel)} &bull; ${esc(s.sport || '')} &bull; ${esc(s.date)}</span>
+       <span class="weight">${esc(s.wcLabel)} &bull; ${esc(s.sport||'')} &bull; ${esc(s.date)}</span>
      </div>`
   ).join('');
 }
@@ -126,17 +109,15 @@ const DEFAULT_RANKINGS = {
 
 let rankingsEditing = false;
 let pendingSlot     = null;
+let rankingsDraft   = null;
 
 async function initRankingsPage() {
-  const pwInput  = $('rankPwInput');
-  const pwBtn    = $('rankPwBtn');
-  const pwStatus = $('rankPwStatus');
+  const pwInput = $('rankPwInput'), pwBtn = $('rankPwBtn'), pwStatus = $('rankPwStatus');
   if (!pwBtn) return;
 
   pwStatus.textContent = 'Loading...';
-  const data     = await readRankings();
-  const rankings = Object.keys(data).length ? data : DEFAULT_RANKINGS;
-  renderRankings(rankings);
+  rankingsDraft = normalizeRankings(await fbGet('rankings'));
+  renderRankings(rankingsDraft);
   pwStatus.textContent = 'Locked';
 
   if (checkSession('rank_unlocked')) enableRankEdit(pwStatus, pwBtn);
@@ -144,13 +125,15 @@ async function initRankingsPage() {
   pwBtn.addEventListener('click', async () => {
     if (rankingsEditing) {
       pwStatus.textContent = 'Saving...';
-      const draft = loadLocal('vfc_rankings_draft', DEFAULT_RANKINGS);
-      await writeRankings(draft);
-      renderRankings(draft);
+      await fbSet('rankings', rankingsDraft);
+      rankingsDraft = normalizeRankings(await fbGet('rankings'));
+      renderRankings(rankingsDraft);
       disableRankEdit(pwStatus, pwBtn, pwInput);
     } else {
       if (pwInput.value === ADMIN_PASSWORD) {
         setSession('rank_unlocked');
+        pwStatus.textContent = 'Loading...';
+        rankingsDraft = normalizeRankings(await fbGet('rankings'));
         enableRankEdit(pwStatus, pwBtn);
         pwInput.value = '';
       } else {
@@ -163,41 +146,33 @@ async function initRankingsPage() {
 
   pwInput.addEventListener('keydown', e => { if (e.key === 'Enter') pwBtn.click(); });
 
-  const slotModal      = $('slotModal');
-  const slotModalClose = $('slotModalClose');
-  const slotSaveBtn    = $('slotSaveBtn');
-
-  slotModalClose.addEventListener('click', () => closeModal(slotModal));
+  const slotModal = $('slotModal');
+  $('slotModalClose').addEventListener('click', () => closeModal(slotModal));
   slotModal.addEventListener('click', e => { if (e.target === slotModal) closeModal(slotModal); });
 
-  slotSaveBtn.addEventListener('click', () => {
+  $('slotSaveBtn').addEventListener('click', () => {
     if (!pendingSlot) return;
-    const name  = $('slotName').value.trim();
-    const rec   = $('slotRecord').value.trim();
-    const draft = loadLocal('vfc_rankings_draft', DEFAULT_RANKINGS);
-    const wc    = pendingSlot.wc;
-    if (!draft[wc]) return;
+    const name = $('slotName').value.trim();
+    const rec  = $('slotRecord').value.trim();
+    const wc   = pendingSlot.wc;
 
-    if (pendingSlot.type === 'champ')          draft[wc].champ = { name, rec };
-    else if (pendingSlot.type === 'contender') draft[wc].contenders[pendingSlot.idx] = { name, rec };
-    else                                       draft[wc].chuds[pendingSlot.idx] = { name, rec };
+    if (pendingSlot.type === 'champ')          rankingsDraft[wc].champ = { name, rec };
+    else if (pendingSlot.type === 'contender') rankingsDraft[wc].contenders[pendingSlot.idx] = { name, rec };
+    else                                       rankingsDraft[wc].chuds[pendingSlot.idx] = { name, rec };
 
-    saveLocal('vfc_rankings_draft', draft);
-    renderRankings(draft);
+    renderRankings(rankingsDraft);
     closeModal(slotModal);
     pendingSlot = null;
   });
 }
 
-async function enableRankEdit(statusEl, btn) {
+function enableRankEdit(statusEl, btn) {
   rankingsEditing = true;
   statusEl.textContent = 'Editing — click slots to update';
   statusEl.className = 'pw-status ok';
   btn.textContent = 'SAVE & LOCK';
   btn.classList.add('active');
   document.body.classList.add('edit-mode');
-  const data = await readRankings();
-  saveLocal('vfc_rankings_draft', Object.keys(data).length ? data : DEFAULT_RANKINGS);
   attachSlotClicks();
 }
 
@@ -228,9 +203,7 @@ function attachSlotClicks() {
 }
 
 function openSlotModal(type, wc, idx) {
-  const draft  = loadLocal('vfc_rankings_draft', DEFAULT_RANKINGS);
-  const wcData = draft[wc] || { champ:{name:'',rec:''}, contenders:[], chuds:[] };
-
+  const wcData = rankingsDraft[wc] || DEFAULT_RANKINGS[wc];
   let cur = { name:'', rec:'' };
   if (type === 'champ')          cur = wcData.champ;
   else if (type === 'contender') cur = wcData.contenders[idx] || cur;
@@ -239,7 +212,6 @@ function openSlotModal(type, wc, idx) {
   $('slotModalTitle').textContent = type === 'champ'
     ? `EDIT CHAMPION — ${WC_LABELS[wc]}`
     : `EDIT ${type.toUpperCase()} #${idx+1} — ${WC_LABELS[wc]}`;
-
   $('slotName').value   = cur.name || '';
   $('slotRecord').value = cur.rec  || '';
   pendingSlot = { type, wc, idx };
@@ -248,31 +220,25 @@ function openSlotModal(type, wc, idx) {
 }
 
 function renderRankings(data) {
-  const WCS = ['sub165','165to185','185plus'];
-  WCS.forEach(wc => {
+  ['sub165','165to185','185plus'].forEach(wc => {
     const wcData = data[wc] || DEFAULT_RANKINGS[wc];
-    const nameEl = $(`champ-${wc}-name`);
-    const recEl  = $(`champ-${wc}-rec`);
+    const nameEl = $(`champ-${wc}-name`), recEl = $(`champ-${wc}-rec`);
     if (nameEl) { nameEl.textContent = wcData.champ.name || 'VACANT'; nameEl.classList.toggle('champ-vacant', !wcData.champ.name); }
     if (recEl)  { recEl.textContent  = wcData.champ.rec  || ''; }
 
-    wcData.contenders.forEach((f, i) => {
-      const slot = $(`${wc}-c${i+1}`);
-      if (!slot) return;
+    toArr(wcData.contenders, 3).forEach((f, i) => {
+      const slot = $(`${wc}-c${i+1}`); if (!slot) return;
       slot.querySelector('.rank-name').textContent = f.name || '—';
-      const rEl = slot.querySelector('.rank-rec');
-      if (rEl) rEl.textContent = f.rec || '';
+      const rEl = slot.querySelector('.rank-rec'); if (rEl) rEl.textContent = f.rec || '';
       slot.classList.toggle('rank-empty', !f.name);
       slot.classList.toggle('filled',     !!f.name);
       slot.classList.toggle('contender',  !!f.name);
     });
 
-    wcData.chuds.forEach((f, i) => {
-      const slot = $(`${wc}-h${i+1}`);
-      if (!slot) return;
+    toArr(wcData.chuds, 3).forEach((f, i) => {
+      const slot = $(`${wc}-h${i+1}`); if (!slot) return;
       slot.querySelector('.rank-name').textContent = f.name || '—';
-      const rEl = slot.querySelector('.rank-rec');
-      if (rEl) rEl.textContent = f.rec || '';
+      const rEl = slot.querySelector('.rank-rec'); if (rEl) rEl.textContent = f.rec || '';
       slot.classList.toggle('rank-empty', !f.name);
       slot.classList.toggle('filled',     !!f.name);
       slot.classList.toggle('chud',       !!f.name);
@@ -282,7 +248,7 @@ function renderRankings(data) {
 }
 
 /* ═══════════════════════════════════════════════
-   FIGHTER PROFILES PAGE
+   FIGHTER PROFILES — now stored in Firebase
 ═══════════════════════════════════════════════ */
 let profilesEditing    = false;
 let editingFighterId   = null;
@@ -290,18 +256,18 @@ let pendingPhotoBase64 = null;
 
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2); }
 
-function initProfilesPage() {
-  const pwInput  = $('profPwInput');
-  const pwBtn    = $('profPwBtn');
-  const pwStatus = $('profPwStatus');
-  const addBtn   = $('addFighterBtn');
-  const grid     = $('fightersGrid');
+async function initProfilesPage() {
+  const pwInput = $('profPwInput'), pwBtn = $('profPwBtn'), pwStatus = $('profPwStatus');
+  const addBtn  = $('addFighterBtn'), grid = $('fightersGrid');
   if (!pwBtn) return;
 
-  renderFighters(grid);
+  grid.innerHTML = '<div class="no-fighters">Loading...</div>';
+  const fighters = normalizeFighters(await fbGet('fighters'));
+  renderFighters(grid, fighters);
+
   if (checkSession('prof_unlocked')) enableProfEdit(pwStatus, pwBtn, addBtn);
 
-  pwBtn.addEventListener('click', () => {
+  pwBtn.addEventListener('click', async () => {
     if (profilesEditing) {
       disableProfEdit(pwStatus, pwBtn, pwInput, addBtn);
     } else {
@@ -328,8 +294,7 @@ function initProfilesPage() {
   editModal.addEventListener('click', e => { if (e.target === editModal) closeModal(editModal); });
 
   $('editPhotoFile').addEventListener('change', e => {
-    const file = e.target.files[0];
-    if (!file) return;
+    const file = e.target.files[0]; if (!file) return;
     const reader = new FileReader();
     reader.onload = ev => {
       pendingPhotoBase64 = ev.target.result;
@@ -340,55 +305,48 @@ function initProfilesPage() {
   });
 
   $('editSaveBtn').addEventListener('click', saveFighter);
-  $('editDeleteBtn').addEventListener('click', () => {
-    if (!editingFighterId) return;
-    if (!confirm('Delete this fighter?')) return;
-    saveLocal(K_FIGHTERS, loadLocal(K_FIGHTERS, []).filter(f => f.id !== editingFighterId));
+  $('editDeleteBtn').addEventListener('click', async () => {
+    if (!editingFighterId || !confirm('Delete this fighter?')) return;
+    const fighters = normalizeFighters(await fbGet('fighters')).filter(f => f.id !== editingFighterId);
+    await fbSet('fighters', fighters);
     closeModal(editModal);
-    renderFighters(grid);
+    renderFighters(grid, fighters);
   });
 }
 
 function enableProfEdit(statusEl, btn, addBtn) {
   profilesEditing = true;
-  statusEl.textContent = 'Admin Mode';
-  statusEl.className = 'pw-status ok';
-  btn.textContent = 'LOCK';
-  btn.classList.add('active');
+  statusEl.textContent = 'Admin Mode'; statusEl.className = 'pw-status ok';
+  btn.textContent = 'LOCK'; btn.classList.add('active');
   addBtn.classList.add('visible');
   document.body.classList.add('edit-mode-profiles');
 }
 
 function disableProfEdit(statusEl, btn, inputEl, addBtn) {
   profilesEditing = false;
-  statusEl.textContent = 'Locked';
-  statusEl.className = 'pw-status';
-  btn.textContent = 'UNLOCK';
-  btn.classList.remove('active');
+  statusEl.textContent = 'Locked'; statusEl.className = 'pw-status';
+  btn.textContent = 'UNLOCK'; btn.classList.remove('active');
   if (inputEl) inputEl.value = '';
   addBtn.classList.remove('visible');
   document.body.classList.remove('edit-mode-profiles');
   sessionStorage.removeItem('prof_unlocked');
 }
 
-function renderFighters(grid) {
+function renderFighters(grid, fighters) {
   if (!grid) return;
-  const fighters = loadLocal(K_FIGHTERS, []);
-  if (!fighters.length) {
-    grid.innerHTML = '<div class="no-fighters">No fighters on the roster yet</div>';
-    return;
+  if (!fighters || !fighters.length) {
+    grid.innerHTML = '<div class="no-fighters">No fighters on the roster yet</div>'; return;
   }
   grid.innerHTML = fighters.map(f => {
-    const avatarHtml = f.photo
+    const avatar = f.photo
       ? `<div class="fighter-avatar"><img src="${f.photo}" alt="${esc(f.name)}" /></div>`
       : `<div class="fighter-avatar">🥊</div>`;
-    return `
-    <div class="fighter-card" data-id="${f.id}">
+    return `<div class="fighter-card" data-id="${f.id}">
       <div class="fighter-card-top">
-        ${avatarHtml}
+        ${avatar}
         <div class="fighter-fn">${esc(f.name)}</div>
         <div class="fighter-wc">${esc(f.weightClass)}</div>
-        <div class="fighter-rec">${esc(f.record || '0-0')}</div>
+        <div class="fighter-rec">${esc(f.record||'0-0')}</div>
       </div>
       <div class="fighter-card-btns">
         <button onclick="openBioModal('${f.id}')">BIO</button>
@@ -398,9 +356,9 @@ function renderFighters(grid) {
   }).join('');
 }
 
-function openBioModal(id) {
-  const f = loadLocal(K_FIGHTERS, []).find(x => x.id === id);
-  if (!f) return;
+async function openBioModal(id) {
+  const fighters = normalizeFighters(await fbGet('fighters'));
+  const f = fighters.find(x => x.id === id); if (!f) return;
   $('bioPhoto').innerHTML     = f.photo ? `<img src="${f.photo}" alt="${esc(f.name)}" />` : '🥊';
   $('bioName').textContent    = f.name;
   $('bioWc').textContent      = f.weightClass;
@@ -409,11 +367,11 @@ function openBioModal(id) {
   openModal($('bioModal'));
 }
 
-function openEditModal(id) {
+async function openEditModal(id) {
   editingFighterId = id; pendingPhotoBase64 = null;
   if (id) {
-    const f = loadLocal(K_FIGHTERS, []).find(x => x.id === id);
-    if (!f) return;
+    const fighters = normalizeFighters(await fbGet('fighters'));
+    const f = fighters.find(x => x.id === id); if (!f) return;
     $('editModalTitle').textContent  = 'EDIT FIGHTER';
     $('editName').value              = f.name;
     $('editWeightClass').value       = f.weightClass;
@@ -433,24 +391,25 @@ function openEditModal(id) {
   openModal($('editFighterModal'));
 }
 
-function saveFighter() {
+async function saveFighter() {
   const name = $('editName').value.trim();
   const wc   = $('editWeightClass').value;
   const rec  = $('editRecord').value.trim();
   const bio  = $('editBio').value.trim();
   if (!name || !wc) { alert('Name and weight class are required.'); return; }
-  const fighters = loadLocal(K_FIGHTERS, []);
+
+  const fighters = normalizeFighters(await fbGet('fighters'));
   if (editingFighterId) {
     const idx = fighters.findIndex(f => f.id === editingFighterId);
     if (idx === -1) return;
-    fighters[idx] = { ...fighters[idx], name, weightClass: wc, record: rec, bio,
+    fighters[idx] = { ...fighters[idx], name, weightClass:wc, record:rec, bio,
       photo: pendingPhotoBase64 !== null ? pendingPhotoBase64 : fighters[idx].photo };
   } else {
-    fighters.push({ id: uid(), name, weightClass: wc, record: rec, bio, photo: pendingPhotoBase64 || '' });
+    fighters.push({ id:uid(), name, weightClass:wc, record:rec, bio, photo:pendingPhotoBase64||'' });
   }
-  saveLocal(K_FIGHTERS, fighters);
+  await fbSet('fighters', fighters);
   closeModal($('editFighterModal'));
-  renderFighters($('fightersGrid'));
+  renderFighters($('fightersGrid'), fighters);
 }
 
 /* ── Boot ── */
