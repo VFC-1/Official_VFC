@@ -1,0 +1,12 @@
+{
+  "name": "official-vfc",
+  "private": true,
+  "type": "module",
+  "description": "Static site + serverless AI calorie estimator for the Leanline tracker (fit/).",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^1.9.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
