@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+  <title>Leanline</title>
+  <meta name="description" content="Log what you eat and burn; Leanline scores your days, tracks streaks and charts your weight-loss journey." />
+  <meta name="theme-color" content="#0b0d12" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Leanline" />
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+  <link rel="icon" type="image/png" href="icons/icon-192.png" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main id="app"></main>
+
+  <nav class="tabbar hidden" id="tabbar">
+    <div class="tabbar-inner">
+      <button class="tab" data-tab="today"><span class="ico">🏠</span>Today</button>
+      <button class="tab" data-tab="journey"><span class="ico">📈</span>Journey</button>
+      <button class="tab" data-tab="ranks"><span class="ico">🏆</span>Ranks</button>
+      <button class="tab" data-tab="badges"><span class="ico">🎖️</span>Badges</button>
+      <button class="tab" data-tab="me"><span class="ico">⚙️</span>Me</button>
+    </div>
+  </nav>
+
+  <div class="backdrop" id="backdrop"></div>
+  <section class="sheet" id="sheet" role="dialog" aria-modal="true"></section>
+  <div class="toast" id="toast"></div>
+  <canvas id="confetti"></canvas>
+
+  <script src="app.js"></script>
+</body>
+</html>
