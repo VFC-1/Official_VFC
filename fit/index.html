@@ -20,11 +20,11 @@
 
   <nav class="tabbar hidden" id="tabbar">
     <div class="tabbar-inner">
-      <button class="tab" data-tab="today"><span class="ico">🏠</span>Today</button>
-      <button class="tab" data-tab="journey"><span class="ico">📈</span>Journey</button>
-      <button class="tab" data-tab="ranks"><span class="ico">🏆</span>Ranks</button>
-      <button class="tab" data-tab="badges"><span class="ico">🎖️</span>Badges</button>
-      <button class="tab" data-tab="me"><span class="ico">⚙️</span>Me</button>
+      <button class="tab" data-tab="today" aria-label="Today"><svg viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>Today</button>
+      <button class="tab" data-tab="journey" aria-label="Journey"><svg viewBox="0 0 24 24"><path d="M3 17l5-5 4 4 8-8M15 8h5v5"/></svg>Journey</button>
+      <button class="fab" id="fab" aria-label="Add"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+      <button class="tab" data-tab="ranks" aria-label="Ranks"><svg viewBox="0 0 24 24"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0zM7 6H4v1a3 3 0 0 0 3 3M17 6h3v1a3 3 0 0 1-3 3"/></svg>Ranks</button>
+      <button class="tab" data-tab="me" aria-label="Me"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>Me</button>
     </div>
   </nav>
 
@@ -34,6 +34,7 @@
   <canvas id="confetti"></canvas>
 
   <script src="fastfood.js"></script>
+  <script src="inspiration.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

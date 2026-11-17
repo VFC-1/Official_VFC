@@ -347,23 +347,42 @@ function readPhoto(file) {
   });
 }
 
-/* ═════════════ messages ═════════════ */
-const QUOTES = [
-  'Small steps every day add up to big results.', 'You don’t have to be perfect — just consistent.', 'Progress, not perfection.',
-  'The best project you’ll ever work on is you.', 'Discipline is choosing what you want most over what you want now.',
-  'One meal at a time. One day at a time.', 'Your future self is watching. Make them proud.', 'Strong is built, not given.',
-  'A slow week is still forward motion.', 'Logging is a superpower — awareness changes everything.', 'Hydrate, move, repeat.',
-  'Every rep, every step, every choice counts.', 'Fall down seven times, log the eighth.', 'You’ve survived 100% of your hardest days.',
-];
-function motd() {
+/* ═════════════ coach line + daily inspiration ═════════════ */
+/** Short contextual nudge for today, or '' when there's nothing timely to say. */
+function coachLine() {
   const st = streak(isLogged), t = totals(todayKey()), tgt = targetFor(), lost = round(S.profile.startWeight - latestWeight(), 1);
   const hr = new Date().getHours();
-  if (st >= 3 && !isLogged(todayKey())) return `🔥 <b>${st}-day streak</b> on the line — log something today to keep it alive!`;
-  if (t.meals && t.net > tgt) return `You’re <b>${fmt(t.net - tgt)} cal over</b> — about ${Math.round((t.net - tgt) / 4.5)} minutes of walking would cover it. 🚶`;
-  if (t.meals && hr >= 18 && t.net <= tgt) return `Crushing it — <b>${fmt(tgt - t.net)} cal</b> to spare tonight. 💪`;
-  if (lost >= 1 && hr < 11) return `Good morning! You’re <b>${lost} lbs down</b> since you started. Keep stacking days. ☀️`;
-  const q = QUOTES[(daysBetween('2026-01-01', todayKey()) % QUOTES.length + QUOTES.length) % QUOTES.length];
-  return `<b>Today’s thought:</b> ${q}`;
+  if (st >= 2 && !isLogged(todayKey())) return `🔥 Your <b>${st}-day streak</b> is on the line. Log something today to keep it.`;
+  if (t.meals && t.net > tgt) return `<b>${fmt(t.net - tgt)} cal over.</b> About ${Math.round((t.net - tgt) / 4.5)} minutes of walking would cover it.`;
+  if (t.meals && hr >= 18 && t.net <= tgt) return `Nice work. <b>${fmt(tgt - t.net)} cal</b> to spare tonight.`;
+  if (lost >= 1 && hr < 11) return `You’re <b>${lost} lbs down</b> since you started. Keep stacking days.`;
+  return '';
+}
+const dayNum = (k = todayKey()) => daysBetween('2026-01-01', k);
+const pick = (list, n) => list[((n % list.length) + list.length) % list.length];
+/** Which inspiration shows today: the user's choice, or alternate verse/quote by day. */
+function inspoKind(k = todayKey()) {
+  const pref = S.settings.inspo || 'both';
+  if (pref === 'verse' || pref === 'quote') return S.settings.inspoToday?.k === k ? S.settings.inspoToday.kind : pref;
+  return S.settings.inspoToday?.k === k ? S.settings.inspoToday.kind : (dayNum(k) % 2 === 0 ? 'verse' : 'quote');
+}
+function inspoCard() {
+  const k = todayKey(), kind = inspoKind(k), n = dayNum(k);
+  const v = pick(VERSES, Math.floor(n / 2) * 7 + (n % 2)), q = pick(QUOTES, Math.floor(n / 2) * 5 + (n % 2));
+  const body = kind === 'verse'
+    ? `<blockquote class="inspo-text">${esc(v.t)}</blockquote><div class="inspo-ref">${esc(v.ref)} <span>NABRE</span></div>`
+    : `<blockquote class="inspo-text">${esc(q.t)}</blockquote><div class="inspo-ref">${q.by ? esc(q.by) : 'Leanline'}</div>`;
+  return `<div class="card inspo ${kind}">
+    <div class="row between inspo-head"><span class="eyebrow">${kind === 'verse' ? '✝️ Verse of the day' : '💬 Quote of the day'}</span>
+      <div class="mini-seg"><button data-inspo="verse" class="${kind === 'verse' ? 'on' : ''}" aria-label="Show verse">Verse</button><button data-inspo="quote" class="${kind === 'quote' ? 'on' : ''}" aria-label="Show quote">Quote</button></div></div>
+    ${body}
+    <button class="inspo-share" id="inspo-share" aria-label="Share">Share ↗</button>
+  </div>`;
+}
+function inspoText() {
+  const k = todayKey(), n = dayNum(k), kind = inspoKind(k);
+  if (kind === 'verse') { const v = pick(VERSES, Math.floor(n / 2) * 7 + (n % 2)); return `“${v.t}” (${v.ref}, NABRE)`; }
+  const q = pick(QUOTES, Math.floor(n / 2) * 5 + (n % 2)); return `“${q.t}”${q.by ? ` (${q.by})` : ''}`;
 }
 
 /* ═════════════ badges ═════════════ */
@@ -453,10 +472,11 @@ function confetti(palette) {
     if (++f < 180) requestAnimationFrame(tick); else ctx.clearRect(0, 0, innerWidth, innerHeight);
   })();
 }
-function ring(pct, color, size = 150, stroke = 14) {
+function ring(pct, colors, size = 196, stroke = 16) {
   const r = (size - stroke) / 2, C = 2 * Math.PI * r, p = clamp(pct, 0, 1);
-  return `<svg width="${size}" height="${size}"><circle cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" stroke="var(--card2)" stroke-width="${stroke}"/>
-  <circle cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" stroke="${color}" stroke-width="${stroke}" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C * (1 - p)}" style="transition:stroke-dashoffset .6s"/></svg>`;
+  return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}"><defs><linearGradient id="ringg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${colors[0]}"/><stop offset="1" stop-color="${colors[1]}"/></linearGradient></defs>
+  <circle cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" stroke="rgba(255,255,255,.07)" stroke-width="${stroke}"/>
+  <circle cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" stroke="url(#ringg)" stroke-width="${stroke}" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C * (1 - p)}" style="transition:stroke-dashoffset .8s cubic-bezier(.2,.9,.3,1)"/></svg>`;
 }
 
 /* ═════════════ screens ═════════════ */
@@ -464,11 +484,29 @@ function render() {
   const app = $('#app');
   if (!S.profile) { $('#tabbar').classList.add('hidden'); app.innerHTML = onboardingHTML(); bindOnboarding(); return; }
   $('#tabbar').classList.remove('hidden');
+  if (tab === 'badges') { tab = 'ranks'; ranksView = 'badges'; }
   $$('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
-  app.innerHTML = { today: todayHTML, journey: journeyHTML, ranks: ranksHTML, badges: badgesHTML, me: meHTML }[tab]();
-  ({ today: bindToday, me: bindMe }[tab])?.();
+  app.innerHTML = { today: todayHTML, journey: journeyHTML, ranks: ranksHTML, me: meHTML }[tab]();
+  ({ today: bindToday, ranks: bindRanks, me: bindMe }[tab])?.();
 }
 $$('.tab').forEach(t => t.addEventListener('click', () => { haptic(); tab = t.dataset.tab; if (tab === 'today') viewDay = todayKey(); render(); scrollTo(0, 0); }));
+$('#fab').addEventListener('click', () => { haptic(); addSheet(); });
+
+/** The + button: every way to log something, one tap away. */
+function addSheet() {
+  const w = peekDay(viewDay).weight || latestWeight(viewDay);
+  openSheet(`<h2>Log for ${relDate(viewDay).toLowerCase() === 'today' ? 'today' : relDate(viewDay)}</h2>
+    <div class="add-grid">
+      <label class="add-tile accent"><input type="file" accept="image/*" id="add-photo" hidden><span class="e">📷</span><b>Snap a meal</b><small>AI counts it</small></label>
+      <button class="add-tile" data-go="food"><span class="e">✍️</span><b>Type food</b><small>“2 eggs and toast”</small></button>
+      <button class="add-tile" data-go="ff"><span class="e">🍔</span><b>Fast food</b><small>15 menus</small></button>
+      <button class="add-tile" data-go="workout"><span class="e">💪</span><b>Workout</b><small>Cardio, lifts, sports</small></button>
+      <button class="add-tile wide" data-go="weight"><span class="e">⚖️</span><b>Weigh-in</b><small>Last: ${w} lb</small></button>
+    </div>`, sh => {
+    $('#add-photo', sh).onchange = e => { const f = e.target.files[0]; if (f) foodSheet({ file: f }); };
+    $$('[data-go]', sh).forEach(b => b.onclick = () => { haptic(); ({ food: () => foodSheet(), ff: () => { ffOrder = []; fastFoodSheet(); }, workout: () => exerciseSheet(), weight: weightSheet })[b.dataset.go](); });
+  });
+}
 
 /* ── onboarding ── */
 function profileForm(p = {}) {
@@ -518,49 +556,71 @@ function bindOnboarding() {
 }
 
 /* ── today ── */
+const MEALS = [['breakfast', '🌅', 'Breakfast'], ['lunch', '☀️', 'Lunch'], ['dinner', '🌙', 'Dinner'], ['snack', '🍿', 'Snacks']];
+function mealOf(e) {
+  if (e.meal) return e.meal;
+  const h = e.time ? new Date(e.time).getHours() + new Date(e.time).getMinutes() / 60 : 12;
+  return h < 10.5 ? 'breakfast' : h < 15 ? 'lunch' : h < 21 ? 'dinner' : 'snack';
+}
+function greeting() { const h = new Date().getHours(); return h < 5 ? 'Up late' : h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening'; }
 function todayHTML() {
   const k = viewDay, d = peekDay(k), t = totals(k), tgt = targetFor(k), sc = scoreFor(k), isToday = k === todayKey();
-  const left = tgt - t.net, st = streak(isLogged), pct = t.net / tgt;
-  const ringColor = t.net > tgt ? 'var(--bad)' : pct > 0.9 ? 'var(--warn)' : 'var(--accent)';
+  const left = tgt - t.net, st = streak(isLogged), pct = t.net / tgt, over = t.net > tgt;
+  const colors = over ? ['#fb7185', '#f43f5e'] : pct > 0.9 ? ['#fde047', '#f59e0b'] : ['#86efac', '#2dd4bf'];
+  const coach = isToday ? coachLine() : '';
   const entry = (e, type) => `<div class="entry">
       ${e.photo ? `<img class="thumb" src="${e.photo}" alt="">` : `<div class="thumb">${type === 'food' ? (e.ff ? '🍔' : '🍽️') : (e.emoji || '🏃')}</div>`}
       <div class="meta"><div class="name">${esc(e.name)}</div><div class="note">${esc(e.note || (e.time ? new Date(e.time).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : ''))}</div></div>
-      <div class="cal" style="color:${type === 'food' ? 'var(--text)' : 'var(--accent)'}">${type === 'food' ? '' : '−'}${fmt(e.cal)}</div>
+      <div class="cal ${type === 'food' ? '' : 'burn'}">${type === 'food' ? '' : '−'}${fmt(e.cal)}</div>
       <button class="del" data-del="${type}:${e.id}" aria-label="Delete">✕</button></div>`;
+  const groups = MEALS.map(([id, em, label]) => ({ id, em, label, items: d.food.filter(e => mealOf(e) === id) })).filter(g => g.items.length);
+  const bar = (v, max, c) => `<div class="mini-bar"><i style="width:${v / max * 100}%;background:${c}"></i></div>`;
   return `
-  <div class="topbar">
-    <div class="datenav"><button id="prev" aria-label="Previous day">‹</button><div class="lbl">${relDate(k)}</div><button id="next" aria-label="Next day" ${isToday ? 'disabled style="opacity:.3"' : ''}>›</button></div>
-    <button class="streak-pill ${st ? '' : 'cold'}" id="rank-pill" aria-label="Streak rank">${rankBadge(rankIndex(st), 22)}<span>🔥 <span class="num">${st}</span></span></button>
-  </div>
-  ${isToday ? `<div class="motd">${motd()}</div>` : ''}
-  <div class="card"><div class="hero">
-    <div class="ring">${ring(pct, ringColor)}<div class="center"><div class="v">${fmt(Math.abs(left))}</div><div class="l">${left >= 0 ? 'cal left' : 'cal over'}</div></div></div>
-    <div class="stats">
-      <div class="stat"><div class="k">EATEN</div><div class="v">${fmt(t.eaten)}</div></div>
-      <div class="stat"><div class="k">BURNED</div><div class="v" style="color:var(--accent)">${fmt(t.burned)}</div></div>
-      <div class="stat"><div class="k">TARGET (NET)</div><div class="v">${fmt(tgt)}</div></div>
-    </div></div>
-    <div class="row between" style="margin-top:14px">
-      <span class="sub">Day score</span>
-      <span class="score-chip" style="color:${scoreColor(sc.total)}">${sc.total} <span style="opacity:.7">· ${scoreGrade(sc.total)}</span></span>
+  <header class="today-head">
+    <div>
+      <div class="eyebrow datenav"><button id="prev" aria-label="Previous day">‹</button><span>${niceDate(k, { weekday: 'long', month: 'short', day: 'numeric' })}</span><button id="next" aria-label="Next day" ${isToday ? 'disabled' : ''}>›</button></div>
+      <h1 class="hello">${isToday ? greeting() : relDate(k)}</h1>
     </div>
-    <div class="scorebar"><i style="width:${sc.total}%;background:${scoreColor(sc.total)}"></i></div>
-    <div class="sub" style="margin-top:6px;font-size:12px">Calories ${sc.cal}/60 · Logging ${sc.log}/20 · Exercise ${sc.ex}/20</div>
-  </div>
-  <div class="quick">
-    <button class="qbtn" data-add="food"><span class="e">🍽️</span>Food</button>
-    <button class="qbtn" data-add="exercise"><span class="e">🏃</span>Exercise</button>
-    <button class="qbtn" data-add="weight"><span class="e">⚖️</span>${d.weight ? d.weight + ' lb' : 'Weight'}</button>
-  </div>
-  <div class="card"><h3>Food · ${fmt(t.eaten)} cal</h3>${d.food.map(e => entry(e, 'food')).join('') || '<div class="empty">Nothing logged yet — tap Food above</div>'}</div>
-  <div class="card"><div class="row between"><h3>Exercise · ${fmt(t.burned)} cal</h3><button class="link" id="wh-link" style="margin-top:-10px">History ›</button></div>${d.exercise.map(e => entry(e, 'exercise')).join('') || '<div class="empty">No workouts yet</div>'}</div>`;
+    <button class="streak-pill ${st ? '' : 'cold'}" id="rank-pill" aria-label="Streak rank">${rankBadge(rankIndex(st), 24)}<span>🔥 <span class="num">${st}</span></span></button>
+  </header>
+  <section class="card hero-card">
+    <div class="ring">${ring(pct, colors)}<div class="center"><div class="v num">${fmt(Math.abs(left))}</div><div class="l">${left >= 0 ? 'calories left' : 'calories over'}</div><div class="of">of ${fmt(tgt)}</div></div></div>
+    <div class="hero-stats">
+      <div><span class="k">🍽️ Eaten</span><span class="v num">${fmt(t.eaten)}</span></div>
+      <div><span class="k">🔥 Burned</span><span class="v num burn">${fmt(t.burned)}</span></div>
+      <button id="hero-weight"><span class="k">⚖️ Weight</span><span class="v num">${d.weight || latestWeight(k)}</span></button>
+    </div>
+    <div class="score-row">
+      <div class="grade" style="--g:${scoreColor(sc.total)}"><b class="num">${sc.total}</b><span>${scoreGrade(sc.total)}</span></div>
+      <div class="score-parts">
+        <div><span>Calories</span>${bar(sc.cal, 60, 'var(--accent)')}</div>
+        <div><span>Logging</span>${bar(sc.log, 20, 'var(--blue)')}</div>
+        <div><span>Exercise</span>${bar(sc.ex, 20, 'var(--orange)')}</div>
+      </div>
+    </div>
+    ${coach ? `<p class="coach">${coach}</p>` : ''}
+  </section>
+  ${isToday ? inspoCard() : ''}
+  <div class="sec-h"><h2>Meals</h2><button class="link" data-add="food">+ Add</button></div>
+  ${groups.length ? groups.map(g => `<section class="card list-card"><div class="row between group-h"><span>${g.em} ${g.label}</span><span class="num">${fmt(g.items.reduce((a, e) => a + e.cal, 0))} cal</span></div>${g.items.map(e => entry(e, 'food')).join('')}</section>`).join('')
+    : `<button class="card empty-card" data-add="food"><span class="e">🍽️</span><b>Log your first meal</b><small>Snap a photo, type it, or pick fast food</small></button>`}
+  <div class="sec-h"><h2>Workouts</h2><div class="row" style="gap:14px"><button class="link muted" id="wh-link">History</button><button class="link" data-add="exercise">+ Add</button></div></div>
+  ${d.exercise.length ? `<section class="card list-card">${d.exercise.map(e => entry(e, 'exercise')).join('')}</section>`
+    : `<button class="card empty-card" data-add="exercise"><span class="e">💪</span><b>No workout yet</b><small>Cardio, lifting, sports. It all counts.</small></button>`}`;
 }
 function bindToday() {
   $('#prev').onclick = () => { viewDay = addDays(viewDay, -1); render(); };
-  $('#wh-link').onclick = workoutHistorySheet;
-  $('#rank-pill').onclick = () => { tab = 'ranks'; render(); scrollTo(0, 0); };
   $('#next').onclick = () => { if (viewDay < todayKey()) { viewDay = addDays(viewDay, 1); render(); } };
-  $$('[data-add]').forEach(b => b.onclick = () => { haptic(); ({ food: foodSheet, exercise: exerciseSheet, weight: weightSheet })[b.dataset.add](); });
+  $('#wh-link').onclick = workoutHistorySheet;
+  $('#hero-weight').onclick = weightSheet;
+  $('#rank-pill').onclick = () => { tab = 'ranks'; ranksView = 'rank'; render(); scrollTo(0, 0); };
+  $$('[data-add]').forEach(b => b.onclick = () => { haptic(); ({ food: () => foodSheet(), exercise: () => exerciseSheet(), weight: weightSheet })[b.dataset.add](); });
+  $$('[data-inspo]').forEach(b => b.onclick = () => { S.settings.inspoToday = { k: todayKey(), kind: b.dataset.inspo }; save(); haptic(); render(); });
+  const share = $('#inspo-share');
+  if (share) share.onclick = async () => {
+    const text = inspoText();
+    try { if (navigator.share) await navigator.share({ text }); else { await navigator.clipboard.writeText(text); toast('Copied'); } } catch { }
+  };
   $$('[data-del]').forEach(b => b.onclick = () => {
     const [type, id] = b.dataset.del.split(':'), list = day(viewDay)[type], e = list.find(x => x.id === id);
     if (!confirm(`Delete “${e.name}”?`)) return;
@@ -583,7 +643,7 @@ function recentFoods() {
   }));
   return [...seen.values()].slice(0, 8);
 }
-function foodSheet() {
+function foodSheet(opts = {}) {
   const recents = recentFoods();
   openSheet(`<h2>🍽️ Log food</h2>
     ${recents.length ? `<div class="sub" style="margin:0 0 8px 4px">Tap to re-add</div><div class="chips">${recents.map((f, i) => `<button class="chip" data-recent="${i}">${esc(f.name.length > 34 ? f.name.slice(0, 32) + '…' : f.name)} <small>${fmt(f.cal)}</small></button>`).join('')}</div>` : ''}
@@ -600,14 +660,16 @@ function foodSheet() {
     let photo = null, estimate = null;
     $$('[data-recent]', sh).forEach(b => b.onclick = () => { const f = recents[+b.dataset.recent]; addEntry('food', { name: f.name, cal: f.cal, note: 'Re-added', photo: f.photo || null, ff: f.ff || null }); });
     $('#ff-open', sh).onclick = () => { ffOrder = []; fastFoodSheet(); };
-    $('#photo-in', sh).onchange = async e => {
-      const file = e.target.files[0]; if (!file) return;
+    const takePhoto = async file => {
+      if (!file) return;
       try {
         photo = await readPhoto(file); estimate = null;
         $('#photo-preview', sh).innerHTML = `<div class="photo-drop"><img src="${photo.ai}" alt=""><button class="x" id="photo-x" type="button">✕</button></div>`;
         $('#photo-x', sh).onclick = ev => { ev.preventDefault(); photo = null; estimate = null; $('#photo-preview', sh).innerHTML = ''; };
       } catch (err) { toast(err.message); }
     };
+    $('#photo-in', sh).onchange = e => takePhoto(e.target.files[0]);
+    if (opts.file) takePhoto(opts.file);
     $('#food-txt', sh).oninput = () => { estimate = null; $('#est', sh).innerHTML = ''; setBtn('Add'); };
     const btn = $('#food-go', sh), setBtn = (h, busy) => { btn.innerHTML = h; btn.disabled = !!busy; };
     btn.onclick = async () => {
@@ -1011,7 +1073,7 @@ function journeyHTML() {
   const pct = clamp(lost / total, 0, 1), proj = projection(), w = weekSummary(0), lw = weekSummary(1);
   const deficitLbs = round(scoredDays().reduce((a, d) => a + (tdee(latestWeight(d.k)) - d.net), 0) / 3500, 1);
   const arrow = (a, b, higherBetter = true) => a === b ? '' : (a > b) === higherBetter ? ' <span style="color:var(--accent)">▲</span>' : ' <span style="color:var(--bad)">▼</span>';
-  return `<div class="page-title">Journey</div>
+  return `<h1 class="page-title">Journey</h1>
   <div class="card">
     <div class="row between"><div><div class="sub">Lost so far</div><div class="big" style="color:var(--accent)">${lost > 0 ? lost : 0} <span style="font-size:18px">lbs</span></div></div>
     <div style="text-align:right"><div class="sub">Current</div><div class="big">${cur}</div></div></div>
@@ -1044,55 +1106,63 @@ function journeyHTML() {
   </div></div>`;
 }
 
-/* ── ranks ── */
+/* ── ranks (rank · best days · badges) ── */
+let ranksView = 'rank';
 function ranksHTML() {
-  const days = scoredDays().sort((a, b) => b.total - a.total || a.net - b.net);
+  const views = [['rank', 'Rank'], ['days', 'Best days'], ['badges', 'Badges']];
+  return `<h1 class="page-title">Ranks</h1>
+  <div class="seg page-seg">${views.map(([k, l]) => `<button data-rv="${k}" class="${ranksView === k ? 'on' : ''}">${l}</button>`).join('')}</div>
+  ${{ rank: rankViewHTML, days: daysViewHTML, badges: badgesHTML }[ranksView]()}`;
+}
+function bindRanks() { $$('[data-rv]').forEach(b => b.onclick = () => { ranksView = b.dataset.rv; haptic(); render(); }); }
+function rankViewHTML() {
   const st = streak(isLogged), tst = streak(isOnTarget);
-  const medal = i => ['🥇', '🥈', '🥉'][i] || `#${i + 1}`;
-  const pod = (d, i, cls = '') => d ? `<div class="pod ${cls}"><div class="m">${medal(i)}</div><div class="sc" style="color:${scoreColor(d.total)}">${d.total}</div><div class="dt">${relDate(d.k)}</div></div>` : '<div class="pod" style="opacity:.3"><div class="m">·</div><div class="sc">–</div><div class="dt">—</div></div>';
   const ri = rankIndex(st), cur = RANKS[ri], next = RANKS[ri + 1], hi = S.records.highestRank;
   const from = cur ? cur.min : 0, pct = next ? clamp((st - from) / (next.min - from), 0, 1) : 1;
   const grad = cur ? `linear-gradient(90deg,${cur.tier.c[1]},${cur.tier.c[0]})` : 'var(--line)';
-  return `<div class="page-title">Rankings</div>
-  <div class="card rank-card">
-    <div class="row" style="gap:14px">${rankBadge(ri, 64)}
-      <div style="flex:1"><div class="sub">Streak rank</div><div class="big" style="font-size:26px">${cur ? cur.name : 'Unranked'}</div>
-      <div class="sub">🔥 ${st}-day logging streak</div></div></div>
+  return `<section class="card rank-hero">
+    <div class="rank-emblem">${rankBadge(ri, 104)}</div>
+    <div class="eyebrow">Streak rank</div>
+    <div class="rank-name">${cur ? cur.name : 'Unranked'}</div>
+    <div class="sub">🔥 ${st}-day logging streak${hi >= 0 ? ` · best rank ${RANKS[hi].name}` : ''}</div>
     <div class="progressbar"><i style="width:${pct * 100}%;background:${grad}"></i></div>
-    <div class="row between sub"><span>${next ? (st ? `${next.min - st} more day${next.min - st === 1 ? '' : 's'} to <b style="color:var(--text)">${next.name}</b>` : 'Log food today to reach <b style="color:var(--text)">Bronze I</b>') : 'Top rank reached 👑'}</span>
-      <span>${hi >= 0 ? `Highest: ${RANKS[hi].name}` : ''}</span></div>
+    <div class="sub">${next ? (st ? `<b class="num" style="color:var(--text)">${next.min - st}</b> more day${next.min - st === 1 ? '' : 's'} to <b style="color:var(--text)">${next.name}</b>` : 'Log food today to reach <b style="color:var(--text)">Bronze I</b>') : 'Top rank reached 👑'}</div>
+  </section>
+  <div class="grid2" style="margin-bottom:12px">
+    <section class="card stat-card"><div class="eyebrow">🔥 Logging streak</div><div class="big num">${st}</div><div class="sub">Best ${S.records.bestStreak} days</div></section>
+    <section class="card stat-card"><div class="eyebrow">🎯 On target</div><div class="big num">${tst}</div><div class="sub">Best ${S.records.bestTargetStreak} days</div></section>
+  </div>
+  <section class="card"><div class="eyebrow" style="margin-bottom:10px">The ladder</div>
     <div class="ladder">${TIERS.map((t, ti) => `<div class="ladder-row"><span class="ladder-name">${t.n}</span>${[0, 1, 2].map(l => {
       const i = ti * 3 + l; return `<div class="ladder-step ${i <= hi ? 'got' : ''} ${i === ri ? 'now' : ''}">${rankBadge(i, 30)}<span>${RANK_MIN[i]}d</span></div>`;
-    }).join('')}</div>`).join('')}</div>
-  </div>
-  <div class="grid2" style="margin-bottom:12px">
-    <div class="card" style="margin:0"><h3>🔥 Logging streak</h3><div class="big">${st}</div><div class="sub">Best: ${S.records.bestStreak} days</div></div>
-    <div class="card" style="margin:0"><h3>🎯 On-target streak</h3><div class="big">${tst}</div><div class="sub">Best: ${S.records.bestTargetStreak} days</div></div>
-  </div>
-  ${days.length ? `<div class="podium">${pod(days[1], 1)}${pod(days[0], 0, 'first')}${pod(days[2], 2)}</div>` : ''}
-  <div class="card"><h3>All days · best to worst</h3>
+    }).join('')}</div>`).join('')}</div></section>`;
+}
+function daysViewHTML() {
+  const days = scoredDays().sort((a, b) => b.total - a.total || a.net - b.net);
+  const medal = i => ['🥇', '🥈', '🥉'][i] || `${i + 1}`;
+  const pod = (d, i, cls = '') => d ? `<div class="pod ${cls}"><div class="m">${medal(i)}</div><div class="sc num" style="color:${scoreColor(d.total)}">${d.total}</div><div class="dt">${relDate(d.k)}</div></div>` : '<div class="pod" style="opacity:.3"><div class="m">·</div><div class="sc">–</div><div class="dt">—</div></div>';
+  return `${days.length ? `<div class="podium">${pod(days[1], 1)}${pod(days[0], 0, 'first')}${pod(days[2], 2)}</div>` : ''}
+  <section class="card list-card">
     ${days.map((d, i) => `<div class="rank"><div class="pos">${medal(i)}</div>
       <div class="meta"><div class="d">${niceDate(d.k)}${d.k === todayKey() ? ' · Today' : ''}</div>
-      <div class="s">🍽️ ${fmt(d.eaten)} · 🏃 ${fmt(d.burned)} · net ${fmt(d.net)}</div>
+      <div class="s">🍽️ ${fmt(d.eaten)} · 🔥 ${fmt(d.burned)} · net ${fmt(d.net)}</div>
       <div class="scorebar"><i style="width:${d.total}%;background:${scoreColor(d.total)}"></i></div></div>
-      <div class="score" style="color:${scoreColor(d.total)}">${d.total}</div></div>`).join('') || '<div class="empty">Log your first day to get ranked</div>'}
-  </div>
+      <div class="score num" style="color:${scoreColor(d.total)}">${d.total}</div></div>`).join('') || '<div class="empty">Log your first day to get ranked</div>'}
+  </section>
   <p class="sub" style="text-align:center">Score = calories on target (60) + logging meals & weigh-in (20) + exercise (20)</p>`;
 }
-
-/* ── badges ── */
 function badgesHTML() {
   const got = BADGES.filter(b => S.badges[b.id]).length;
-  return `<div class="page-title">Badges</div><p class="sub" style="margin-top:-8px">${got} of ${BADGES.length} unlocked</p>
-  <div class="progressbar"><i style="width:${got / BADGES.length * 100}%"></i></div>
-  <div class="badges" style="margin-top:14px">${BADGES.map(b => `<div class="badge ${S.badges[b.id] ? '' : 'locked'}"><div class="e">${b.e}</div><div class="t">${esc(b.t)}</div>
+  return `<section class="card"><div class="row between"><span class="eyebrow">Collected</span><b class="num">${got} / ${BADGES.length}</b></div>
+  <div class="progressbar"><i style="width:${got / BADGES.length * 100}%"></i></div></section>
+  <div class="badges">${BADGES.map(b => `<div class="badge ${S.badges[b.id] ? '' : 'locked'}"><div class="e">${b.e}</div><div class="t">${esc(b.t)}</div>
     <div class="dsc">${S.badges[b.id] ? `✓ ${niceDate(S.badges[b.id], { month: 'short', day: 'numeric' })}` : esc(b.d)}</div></div>`).join('')}</div>`;
 }
 
 /* ── me / settings ── */
 function meHTML() {
   const p = S.profile, used = (() => { try { return Math.round((localStorage.getItem(STORE_KEY) || '').length / 1024); } catch { return 0; } })();
-  return `<div class="page-title">Me</div>
+  return `<h1 class="page-title">Me</h1>
   <div class="card"><h3>Your numbers</h3><div class="settings-list">
     <div class="item"><span>Daily target (net)</span><b>${fmt(targetFor())} cal</b></div>
     <div class="item"><span>Maintenance (TDEE)</span><b>${fmt(tdee(latestWeight()))} cal</b></div>
@@ -1108,8 +1178,13 @@ function meHTML() {
   <div class="card"><h3>Backup</h3><p class="sub" style="margin-top:0">Your data lives only on this phone (${used} KB). Export a backup now and then — save it to Files or iCloud.</p>
     <div class="grid2"><button class="btn secondary" id="exp">⬇️ Export</button><label class="btn secondary">⬆️ Import<input type="file" id="imp" accept="application/json,.json" hidden></label></div>
   </div>
+  <div class="card"><h3>Daily inspiration</h3>
+    <div class="seg" id="inspo-pref">${[['both', 'Both'], ['verse', 'Verses'], ['quote', 'Quotes']].map(([k, l]) => `<button data-ip="${k}" class="${(S.settings.inspo || 'both') === k ? 'on' : ''}">${l}</button>`).join('')}</div>
+    <p class="sub" style="margin-bottom:0">“Both” alternates a Bible verse and a quote each day. Tap Verse/Quote on the card to switch for the day.</p>
+  </div>
   <div class="card"><button class="btn danger" id="reset">Erase everything</button></div>
-  <p class="sub" style="text-align:center">Leanline · estimates are guides, not medical advice</p>`;
+  <p class="sub" style="text-align:center">Leanline · estimates are guides, not medical advice</p>
+  <p class="legal">${esc(NABRE_NOTICE)}</p>`;
 }
 function bindMe() {
   const root = $('#prof'); bindSegs(root);
@@ -1118,6 +1193,7 @@ function bindMe() {
     if (np.startWeight !== S.profile.startWeight) day(S.profile.startDate).weight = np.startWeight;
     S.profile = np; save(); evaluate(); render(); toast(`Saved · new target ${fmt(targetFor())} cal`);
   };
+  $$('[data-ip]').forEach(b => b.onclick = () => { S.settings.inspo = b.dataset.ip; delete S.settings.inspoToday; save(); render(); toast('Saved'); });
   $('#api-save').onclick = () => { S.settings.apiUrl = $('#api-url').value.trim(); S.settings.apiCode = $('#api-code').value.trim(); save(); toast('AI settings saved'); };
   $('#api-test').onclick = async () => {
     S.settings.apiUrl = $('#api-url').value.trim(); S.settings.apiCode = $('#api-code').value.trim(); save();
