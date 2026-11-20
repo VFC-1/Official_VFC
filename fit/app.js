@@ -127,10 +127,10 @@ function longest(test) {
 }
 /* ═════════════ streak ranks ═════════════ */
 const TIERS = [
-  { id: 'bronze', n: 'Bronze', c: ['#e3a46b', '#8a4b1d'], rgb: '205,127,50', rgb2: '150,82,32', confetti: ['#cd7f32', '#e3a46b', '#8a4b1d', '#f3d2b0'] },
-  { id: 'silver', n: 'Silver', c: ['#eef2f7', '#8c96a6'], rgb: '196,206,220', rgb2: '120,132,152', confetti: ['#e5e9f0', '#b8c1cf', '#8c96a6', '#ffffff'] },
-  { id: 'gold', n: 'Gold', c: ['#ffe08a', '#b8860b'], rgb: '240,190,60', rgb2: '184,134,11', confetti: ['#f5c542', '#ffe08a', '#b8860b', '#fff4cc'] },
-  { id: 'diamond', n: 'Diamond', c: ['#67e8f9', '#8b5cf6'], rgb: '103,232,249', rgb2: '139,92,246', confetti: ['#7dd3fc', '#a5f3fc', '#a78bfa', '#e0e7ff'] },
+  { id: 'bronze', n: 'Bronze', c: ['#e3a46b', '#8a4b1d'], rgb: '205,127,50', rgb2: '150,82,32', acc: '236,166,104', band: ['#2b1407', '#8a4c1f', '#c97f3e'], confetti: ['#cd7f32', '#e3a46b', '#8a4b1d', '#f3d2b0'] },
+  { id: 'silver', n: 'Silver', c: ['#eef2f7', '#8c96a6'], rgb: '196,206,220', rgb2: '120,132,152', acc: '218,226,236', band: ['#171b23', '#566174', '#aab4c3'], confetti: ['#e5e9f0', '#b8c1cf', '#8c96a6', '#ffffff'] },
+  { id: 'gold', n: 'Gold', c: ['#ffe08a', '#b8860b'], rgb: '240,190,60', rgb2: '184,134,11', acc: '247,201,72', band: ['#271c03', '#8c650c', '#dcaa2c'], confetti: ['#f5c542', '#ffe08a', '#b8860b', '#fff4cc'] },
+  { id: 'diamond', n: 'Diamond', c: ['#67e8f9', '#8b5cf6'], rgb: '103,232,249', rgb2: '139,92,246', acc: '110,231,249', band: ['#0a1730', '#16698a', '#6d4fe0'], confetti: ['#7dd3fc', '#a5f3fc', '#a78bfa', '#e0e7ff'] },
 ];
 const RANK_MIN = [1, 3, 5, 7, 10, 14, 21, 30, 45, 60, 90, 120];
 const RANKS = RANK_MIN.map((min, i) => ({ i, min, tier: TIERS[(i / 3) | 0], lvl: (i % 3) + 1, name: `${TIERS[(i / 3) | 0].n} ${['I', 'II', 'III'][i % 3]}` }));
@@ -144,12 +144,14 @@ function rankBadge(i, size = 28) {
     <text x="16" y="20.5" text-anchor="middle" font-size="${r.lvl === 3 ? 9.5 : 11}" font-weight="800" fill="rgba(20,16,10,.72)" font-family="-apple-system,system-ui,sans-serif">${['I', 'II', 'III'][r.lvl - 1]}</text></svg>`;
 }
 /** Tint the app background to the current rank (subtle; richer per level). */
+const BASE_THEME = { acc: '74,222,128', band: ['#05211a', '#0f6447', '#1e9f78'], rgb: '74,222,128', rgb2: '45,212,191' };
 function applyRankTheme() {
-  const b = document.body, i = S.profile ? rankIndex(streak(isLogged)) : -1;
-  if (i < 0) { delete b.dataset.tier; delete b.dataset.lvl; return; }
-  const r = RANKS[i];
-  b.dataset.tier = r.tier.id; b.dataset.lvl = r.lvl;
-  b.style.setProperty('--rk', r.tier.rgb); b.style.setProperty('--rk2', r.tier.rgb2);
+  const b = document.body, i = S.profile ? rankIndex(streak(isLogged)) : -1, r = RANKS[i];
+  const th = r ? r.tier : BASE_THEME;
+  if (r) { b.dataset.tier = r.tier.id; b.dataset.lvl = r.lvl; } else { delete b.dataset.tier; delete b.dataset.lvl; }
+  b.style.setProperty('--rk', th.rgb); b.style.setProperty('--rk2', th.rgb2); b.style.setProperty('--acc', th.acc);
+  b.style.setProperty('--band1', th.band[0]); b.style.setProperty('--band2', th.band[1]); b.style.setProperty('--band3', th.band[2]);
+  $('meta[name="theme-color"]')?.setAttribute('content', th.band[0]);
 }
 
 function scoredDays() {
@@ -183,22 +185,55 @@ function projection() {
 }
 
 /* ═════════════ offline estimators (used when AI isn't set up) ═════════════ */
-const FOODS = [ // [keywords, kcal per unit, unit label]
-  [['egg'], 75, 'egg'], [['toast', 'bread', 'slice'], 80, 'slice'], [['bagel'], 280, 'bagel'], [['butter'], 100, 'tbsp'],
-  [['banana'], 105, 'banana'], [['apple'], 95, 'apple'], [['orange'], 65, 'orange'], [['grape'], 100, 'cup'], [['berries', 'strawberr', 'blueberr'], 70, 'cup'],
-  [['oatmeal', 'oats'], 160, 'bowl'], [['cereal'], 220, 'bowl'], [['yogurt', 'yoghurt'], 150, 'cup'], [['granola'], 250, 'half cup'],
-  [['milk'], 120, 'cup'], [['coffee'], 5, 'cup'], [['latte'], 190, 'grande'], [['frappuccino', 'frappe'], 380, 'grande'], [['soda', 'coke', 'pepsi', 'sprite'], 150, 'can'],
-  [['juice'], 120, 'cup'], [['beer'], 150, 'beer'], [['wine'], 125, 'glass'], [['energy drink', 'monster', 'red bull'], 160, 'can'], [['protein shake', 'shake'], 160, 'shake'],
-  [['chicken breast', 'grilled chicken'], 280, 'breast'], [['chicken'], 300, 'serving'], [['nugget'], 48, 'nugget'], [['wing'], 90, 'wing'], [['tender', 'strip'], 120, 'tender'],
-  [['steak'], 550, 'steak'], [['burger', 'cheeseburger'], 550, 'burger'], [['hot dog'], 290, 'hot dog'], [['bacon'], 45, 'strip'], [['sausage'], 190, 'link'],
-  [['salmon'], 360, 'fillet'], [['tuna'], 180, 'can'], [['shrimp'], 120, 'serving'], [['fish'], 250, 'fillet'],
-  [['pizza'], 285, 'slice'], [['taco'], 210, 'taco'], [['burrito'], 750, 'burrito'], [['quesadilla'], 520, 'quesadilla'], [['nachos'], 650, 'plate'],
-  [['beef n cheddar', 'roast beef'], 450, 'sandwich'], [['sandwich', 'sub'], 450, 'sandwich'], [['wrap'], 450, 'wrap'], [['sushi roll', 'roll'], 300, 'roll'], [['ramen'], 450, 'bowl'], [['pho'], 450, 'bowl'],
-  [['rice'], 205, 'cup'], [['pasta', 'spaghetti', 'noodle', 'mac'], 400, 'plate'], [['potato'], 160, 'potato'], [['fries'], 380, 'medium'], [['chips'], 150, 'bag'],
-  [['salad'], 200, 'bowl'], [['soup'], 200, 'bowl'], [['broccoli', 'veggie', 'vegetable', 'green bean', 'carrot'], 50, 'cup'], [['avocado'], 240, 'avocado'],
-  [['cheese'], 110, 'slice'], [['peanut butter', 'pb'], 190, '2 tbsp'], [['pb&j', 'pbj'], 380, 'sandwich'], [['nuts', 'almond', 'peanut', 'cashew'], 170, 'handful'],
-  [['protein bar', 'granola bar', 'bar'], 220, 'bar'], [['cookie'], 150, 'cookie'], [['donut', 'doughnut'], 260, 'donut'], [['muffin'], 420, 'muffin'], [['pancake'], 175, 'pancake'], [['waffle'], 220, 'waffle'],
-  [['ice cream'], 270, 'cup'], [['chocolate', 'candy'], 220, 'bar'], [['cake'], 350, 'slice'], [['popcorn'], 130, 'cup bag'],
+// Offline food list: [keywords (whole words; plurals handled), kcal per unit, unit]. Longest keyword wins.
+const FOODS = [
+  // breakfast
+  [['egg', 'eggs over easy', 'fried egg', 'scrambled egg', 'boiled egg'], 80, 'egg'], [['egg white'], 17, 'egg white'], [['omelet', 'omelette'], 350, 'omelet'],
+  [['bacon', 'bacon strip'], 45, 'strip'], [['turkey bacon'], 35, 'strip'], [['sausage', 'sausage link'], 170, 'link'], [['sausage patty'], 200, 'patty'],
+  [['pancake'], 175, 'pancake'], [['waffle'], 220, 'waffle'], [['french toast'], 230, 'slice'], [['syrup', 'maple syrup'], 200, 'serving'],
+  [['toast', 'bread', 'slice of bread', 'piece of toast'], 80, 'slice'], [['english muffin'], 135, 'muffin'], [['bagel'], 280, 'bagel'], [['biscuit'], 250, 'biscuit'],
+  [['biscuits and gravy'], 600, 'plate'], [['gravy'], 100, 'serving'], [['hash brown', 'hashbrown'], 150, 'serving'], [['grits'], 180, 'bowl'],
+  [['butter'], 100, 'tbsp'], [['cream cheese'], 100, '2 tbsp'], [['jelly', 'jam'], 50, 'tbsp'], [['honey'], 64, 'tbsp'],
+  [['oatmeal', 'oats'], 160, 'bowl'], [['cereal'], 220, 'bowl'], [['yogurt', 'yoghurt', 'greek yogurt'], 150, 'cup'], [['granola'], 250, 'half cup'],
+  [['breakfast burrito'], 550, 'burrito'], [['breakfast taco'], 250, 'taco'], [['breakfast sandwich'], 450, 'sandwich'], [['croissant'], 270, 'croissant'],
+  [['muffin'], 420, 'muffin'], [['donut', 'doughnut'], 260, 'donut'], [['cinnamon roll'], 420, 'roll'], [['kolache'], 300, 'kolache'],
+  // fruit & veg
+  [['banana'], 105, 'banana'], [['apple'], 95, 'apple'], [['orange'], 65, 'orange'], [['grape'], 100, 'cup'], [['berries', 'strawberries', 'blueberries', 'strawberry', 'blueberry'], 70, 'cup'],
+  [['watermelon'], 85, 'cup'], [['pineapple'], 80, 'cup'], [['mango'], 200, 'mango'], [['peach'], 60, 'peach'], [['fruit', 'fruit cup'], 80, 'cup'],
+  [['salad', 'side salad'], 200, 'bowl'], [['caesar salad'], 450, 'bowl'], [['broccoli', 'veggies', 'vegetables', 'green beans', 'carrots', 'corn', 'peas', 'spinach'], 60, 'cup'],
+  [['avocado'], 240, 'avocado'], [['guacamole', 'guac'], 230, 'half cup'], [['pickle'], 5, 'pickle'],
+  // mains
+  [['chicken', 'chicken breast', 'grilled chicken', 'baked chicken'], 280, 'breast'], [['fried chicken'], 400, 'piece'], [['nugget', 'chicken nugget'], 48, 'nugget'],
+  [['wing', 'chicken wing', 'hot wing'], 90, 'wing'], [['tender', 'chicken tender', 'chicken strip'], 130, 'tender'], [['rotisserie chicken'], 450, 'quarter'],
+  [['steak'], 600, 'steak'], [['ribeye'], 750, 'steak'], [['brisket'], 350, 'serving'], [['ribs', 'rib'], 900, 'half rack'], [['pulled pork'], 400, 'serving'],
+  [['pork chop'], 300, 'chop'], [['ham'], 60, 'slice'], [['turkey'], 50, 'slice'], [['meatball'], 75, 'meatball'], [['meatloaf'], 350, 'slice'],
+  [['burger', 'hamburger', 'cheeseburger'], 600, 'burger'], [['hot dog', 'corn dog'], 290, 'hot dog'],
+  [['salmon'], 360, 'fillet'], [['tuna'], 180, 'can'], [['shrimp'], 120, 'serving'], [['fish', 'tilapia', 'catfish', 'cod'], 250, 'fillet'], [['fish sticks'], 50, 'stick'],
+  [['pizza', 'slice of pizza', 'pizza slice', 'pepperoni pizza', 'cheese pizza'], 285, 'slice'], [['personal pizza'], 800, 'pizza'],
+  [['taco', 'street taco'], 200, 'taco'], [['burrito'], 750, 'burrito'], [['burrito bowl'], 700, 'bowl'], [['quesadilla'], 520, 'quesadilla'], [['nachos'], 650, 'plate'],
+  [['fajita', 'fajitas', 'chicken fajitas', 'beef fajitas', 'fajita chicken', 'fajita beef', 'steak fajitas', 'fajita plate'], 900, 'plate'], [['enchilada'], 330, 'enchilada'], [['tamale'], 285, 'tamale'],
+  [['tortilla', 'flour tortilla'], 140, 'tortilla'], [['chips and salsa', 'tortilla chips'], 430, 'basket'], [['queso'], 120, 'quarter cup'], [['salsa', 'pico'], 15, 'serving'],
+  [['refried beans', 'beans', 'black beans', 'charro beans'], 220, 'cup'], [['mexican rice', 'spanish rice'], 220, 'cup'], [['sour cream'], 60, '2 tbsp'],
+  [['sandwich', 'sub', 'hoagie'], 450, 'sandwich'], [['grilled cheese'], 440, 'sandwich'], [['pbj', 'pb and j', 'peanut butter and jelly'], 380, 'sandwich'],
+  [['beef n cheddar', 'roast beef'], 450, 'sandwich'], [['wrap'], 450, 'wrap'], [['sushi', 'sushi roll', 'roll of sushi'], 300, 'roll'], [['ramen'], 450, 'bowl'], [['pho'], 450, 'bowl'],
+  [['fried rice'], 520, 'plate'], [['orange chicken'], 490, 'serving'], [['lo mein', 'chow mein'], 500, 'plate'], [['egg roll'], 200, 'egg roll'], [['dumpling', 'potsticker'], 60, 'dumpling'],
+  [['rice', 'white rice', 'brown rice'], 205, 'cup'], [['pasta', 'spaghetti', 'noodles', 'penne', 'fettuccine'], 400, 'plate'], [['spaghetti and meatballs'], 700, 'plate'],
+  [['lasagna'], 450, 'piece'], [['mac and cheese', 'mac n cheese', 'macaroni'], 400, 'cup'], [['alfredo'], 900, 'plate'],
+  [['potato', 'baked potato'], 160, 'potato'], [['mashed potatoes'], 240, 'cup'], [['sweet potato'], 115, 'potato'], [['fries', 'french fries'], 380, 'serving'], [['tots', 'tater tots'], 350, 'serving'],
+  [['chili'], 300, 'bowl'], [['soup'], 200, 'bowl'], [['stew'], 350, 'bowl'], [['casserole'], 400, 'serving'], [['pot pie'], 650, 'pie'], [['gumbo'], 350, 'bowl'],
+  [['cheese', 'slice of cheese'], 110, 'slice'], [['string cheese'], 80, 'stick'], [['peanut butter'], 190, '2 tbsp'], [['nuts', 'almonds', 'peanuts', 'cashews', 'trail mix'], 170, 'handful'],
+  [['hummus'], 70, '2 tbsp'], [['crackers'], 130, 'serving'], [['pretzels'], 110, 'serving'], [['chips', 'potato chips', 'doritos', 'cheetos'], 150, 'bag'], [['popcorn'], 130, 'cup bag'],
+  // sweets & snacks
+  [['candy bar', 'snickers', 'kit kat', 'twix', 'reeses', 'chocolate bar', 'milky way', 'butterfinger'], 230, 'bar'], [['candy', 'skittles', 'm and ms', 'gummy bears', 'starburst'], 220, 'pack'],
+  [['chocolate'], 210, 'bar'], [['protein bar', 'granola bar', 'cliff bar', 'quest bar'], 210, 'bar'], [['cookie'], 150, 'cookie'], [['brownie'], 250, 'brownie'],
+  [['cake', 'slice of cake'], 350, 'slice'], [['cupcake'], 300, 'cupcake'], [['pie', 'slice of pie'], 400, 'slice'], [['cheesecake'], 450, 'slice'],
+  [['ice cream'], 270, 'cup'], [['milkshake', 'shake'], 600, 'shake'], [['pop tart', 'poptart'], 200, 'pastry'], [['rice krispie treat'], 90, 'bar'],
+  // drinks
+  [['milk'], 120, 'cup'], [['chocolate milk'], 190, 'cup'], [['coffee', 'black coffee'], 5, 'cup'], [['latte'], 190, 'grande'], [['frappuccino', 'frappe'], 380, 'grande'],
+  [['soda', 'coke', 'pepsi', 'sprite', 'dr pepper', 'mountain dew', 'root beer'], 150, 'can'], [['diet coke', 'diet soda', 'coke zero', 'diet dr pepper', 'water', 'sparkling water'], 0, 'drink'],
+  [['sweet tea'], 180, 'glass'], [['lemonade'], 200, 'glass'], [['juice', 'orange juice', 'apple juice'], 120, 'cup'], [['smoothie'], 350, 'smoothie'],
+  [['beer'], 150, 'beer'], [['light beer', 'michelob ultra', 'bud light', 'coors light'], 100, 'beer'], [['wine', 'glass of wine'], 125, 'glass'], [['margarita'], 300, 'drink'],
+  [['energy drink', 'monster', 'red bull', 'celsius'], 160, 'can'], [['protein shake'], 160, 'shake'], [['gatorade', 'powerade'], 140, 'bottle'],
 ];
 const NUMWORDS = { a: 1, an: 1, one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, half: 0.5, couple: 2, few: 3 };
 
@@ -291,24 +326,54 @@ function splitFoods(text) {
   // "Whopper, no mayo" → the tweak belongs to the item before it.
   return parts.reduce((out, p) => { if (out.length && /^(no|extra|add|light|without|hold the|diet|zero)\b/.test(p) && !/^(diet|zero) /.test(p)) out[out.length - 1] += ' ' + p; else out.push(p); return out; }, []);
 }
+/* Generic (non-menu) foods: find every food word in a phrase, longest match first. */
+const FOOD_KEYS = FOODS.flatMap(f => f[0].map(k => ({ k: ffNorm(k).trim(), f }))).sort((a, b) => b.k.length - a.k.length);
+const QTY_SKIP = new Set(['piece', 'pieces', 'slice', 'slices', 'strip', 'strips', 'cup', 'cups', 'of', 'x', 'large', 'big', 'small', 'medium', 'scoop', 'scoops', 'bowl', 'bowls', 'plate', 'plates', 'handful', 'bag', 'can', 'cans', 'glass', 'glasses', 'serving', 'servings', 'homemade', 'home', 'made', 'fried', 'scrambled', 'grilled', 'baked', 'boiled', 'over', 'easy', 'hard']);
+const FILLER = new Set([...QTY_SKIP, 'and', 'with', 'a', 'an', 'the', 'some', 'my', 'had', 'ate', 'for', 'on', 'in', 'w', 'at', 'from', 'side', 'extra', 'little', 'bit', 'lot', 'few', 'couple', 'two', 'three', 'four', 'five', 'one', 'half', 'light', 'regular', 'mini', 'double', 'single', 'plain', 'fresh', 'warm', 'cold', 'hot', 'iced', 'sweet', 'spicy', 'leftover', 'leftovers', 'today', 'breakfast', 'lunch', 'dinner', 'snack', 'meal', 'pc', 'pcs', 'oz', 'lb', 'tbsp', 'tsp']);
+function scanFoods(part) {
+  const t = ffNorm(part), toks = t.trim().split(' '), used = new Array(toks.length).fill(false), hits = [];
+  for (const { k, f } of FOOD_KEYS) {
+    const kt = k.split(' ');
+    for (let i = 0; i + kt.length <= toks.length; i++) {
+      if (used.slice(i, i + kt.length).some(Boolean)) continue;
+      const ok = kt.every((w, j) => { const x = toks[i + j]; return x === w || x === w + 's' || x === w + 'es' || (w.endsWith('y') && x === w.slice(0, -1) + 'ies'); });
+      if (!ok) continue;
+      for (let j = 0; j < kt.length; j++) used[i + j] = true;
+      // quantity: nearest number within 3 words before, skipping words like "pieces of"
+      let qty = 1, size = 1;
+      for (let j = i - 1; j >= Math.max(0, i - 4); j--) {
+        const x = toks[j];
+        if (/^\d+(\.\d+)?$/.test(x)) { qty = parseFloat(x); used[j] = true; break; }
+        if (NUMWORDS[x] && x !== 'a') { qty = NUMWORDS[x]; used[j] = true; break; }
+        if (x === 'large' || x === 'big' || x === 'double') size = 1.4;
+        if (x === 'small' || x === 'mini' || x === 'little') size = 0.7;
+        if (!QTY_SKIP.has(x)) break;
+      }
+      hits.push({ i, name: kt.join(' '), f, qty, cal: Math.round(f[1] * qty * size) });
+    }
+  }
+  const unknown = toks.filter((w, i) => !used[i] && !FILLER.has(w) && !/^\d/.test(w) && !NUMWORDS[w] && w.length > 2);
+  return { hits: hits.sort((a, b) => a.i - b.i), unknown };
+}
 function localFoodEstimate(text) {
   const parts = splitFoods(text);
   const items = []; let total = 0, menuHits = 0, ctx = chainIn(ffNorm(text));
+  const unknown = [];
   for (const part of parts) {
     const ff = ffMatchPart(part, ctx);
     if (ff) { ctx = ff.chain; menuHits++; items.push({ name: `${ff.chain.name} ${ff.name}`, short: ff.name.replace(/ \(.*\)$/, ''), chain: ff.chain.name, portion: '', calories: ff.cal }); total += ff.cal; continue; }
-    const m = part.match(/(\d+(?:\.\d+)?)/); const w = part.split(/\s+/).find(x => NUMWORDS[x]);
-    const qty = m ? parseFloat(m[1]) : w ? NUMWORDS[w] : 1;
-    const large = /\b(large|big|double|xl)\b/.test(part) ? 1.4 : /\b(small|mini|little)\b/.test(part) ? 0.7 : 1;
-    const hit = FOODS.find(([keys]) => keys.some(kw => part.includes(kw)));
-    if (hit) { const cal = Math.round(hit[1] * qty * large); items.push({ name: part, calories: cal }); total += cal; }
+    const { hits, unknown: u } = scanFoods(part);
+    for (const h of hits) { items.push({ name: `${h.qty !== 1 ? h.qty + ' × ' : ''}${h.name}`, portion: h.name.includes(h.f[2]) || h.f[2].includes(h.name) ? '' : `per ${h.f[2]}`, calories: h.cal }); total += h.cal; }
+    if (!hits.length) unknown.push(part); else unknown.push(...u.filter(w => !chainIn(` ${w} `)));
   }
   if (!items.length) return null;
   const menuAll = menuHits === parts.length && !(chainIn(ffNorm(text)) && !menuHits);
+  const missed = [...new Set(unknown)].slice(0, 4);
   return {
-    items, total_calories: total, confidence: menuAll ? 'menu' : 'low', menuAll,
+    items, total_calories: total, confidence: menuAll ? 'menu' : 'quick', menuAll, missed,
     title: menuAll ? (new Set(items.map(i => i.chain)).size === 1 ? `${items[0].chain}: ${items.map(i => i.short).join(', ')}` : items.map(i => i.name).join(', ')) : null,
-    note: menuAll ? 'Matched the built-in menu (≈ published values).' : 'Offline rough estimate. Set up AI in Me → Settings for better ones.',
+    note: menuAll ? 'Matched the built-in menu (≈ published values).'
+      : `Quick estimate from Leanline’s food list.${missed.length ? ` Didn’t recognize “${missed.join(', ')}”, so it isn’t counted. Type a total above if that’s off.` : ''}${aiReady() ? '' : ' For photos and restaurant meals, turn on AI in Me → AI estimates.'}`,
   };
 }
 /* ═════════════ AI estimate (via your serverless proxy) ═════════════ */
@@ -347,23 +412,42 @@ function readPhoto(file) {
   });
 }
 
-/* ═════════════ messages ═════════════ */
-const QUOTES = [
-  'Small steps every day add up to big results.', 'You don’t have to be perfect — just consistent.', 'Progress, not perfection.',
-  'The best project you’ll ever work on is you.', 'Discipline is choosing what you want most over what you want now.',
-  'One meal at a time. One day at a time.', 'Your future self is watching. Make them proud.', 'Strong is built, not given.',
-  'A slow week is still forward motion.', 'Logging is a superpower — awareness changes everything.', 'Hydrate, move, repeat.',
-  'Every rep, every step, every choice counts.', 'Fall down seven times, log the eighth.', 'You’ve survived 100% of your hardest days.',
-];
-function motd() {
+/* ═════════════ coach line + daily inspiration ═════════════ */
+/** Short contextual nudge for today, or '' when there's nothing timely to say. */
+function coachLine() {
   const st = streak(isLogged), t = totals(todayKey()), tgt = targetFor(), lost = round(S.profile.startWeight - latestWeight(), 1);
   const hr = new Date().getHours();
-  if (st >= 3 && !isLogged(todayKey())) return `🔥 <b>${st}-day streak</b> on the line — log something today to keep it alive!`;
-  if (t.meals && t.net > tgt) return `You’re <b>${fmt(t.net - tgt)} cal over</b> — about ${Math.round((t.net - tgt) / 4.5)} minutes of walking would cover it. 🚶`;
-  if (t.meals && hr >= 18 && t.net <= tgt) return `Crushing it — <b>${fmt(tgt - t.net)} cal</b> to spare tonight. 💪`;
-  if (lost >= 1 && hr < 11) return `Good morning! You’re <b>${lost} lbs down</b> since you started. Keep stacking days. ☀️`;
-  const q = QUOTES[(daysBetween('2026-01-01', todayKey()) % QUOTES.length + QUOTES.length) % QUOTES.length];
-  return `<b>Today’s thought:</b> ${q}`;
+  if (st >= 2 && !isLogged(todayKey())) return `🔥 Your <b>${st}-day streak</b> is on the line. Log something today to keep it.`;
+  if (t.meals && t.net > tgt) return `<b>${fmt(t.net - tgt)} cal over.</b> About ${Math.round((t.net - tgt) / 4.5)} minutes of walking would cover it.`;
+  if (t.meals && hr >= 18 && t.net <= tgt) return `Nice work. <b>${fmt(tgt - t.net)} cal</b> to spare tonight.`;
+  if (lost >= 1 && hr < 11) return `You’re <b>${lost} lbs down</b> since you started. Keep stacking days.`;
+  return '';
+}
+const dayNum = (k = todayKey()) => daysBetween('2026-01-01', k);
+const pick = (list, n) => list[((n % list.length) + list.length) % list.length];
+/** Which inspiration shows today: the user's choice, or alternate verse/quote by day. */
+function inspoKind(k = todayKey()) {
+  const pref = S.settings.inspo || 'both';
+  if (pref === 'verse' || pref === 'quote') return S.settings.inspoToday?.k === k ? S.settings.inspoToday.kind : pref;
+  return S.settings.inspoToday?.k === k ? S.settings.inspoToday.kind : (dayNum(k) % 2 === 0 ? 'verse' : 'quote');
+}
+function inspoCard() {
+  const k = todayKey(), kind = inspoKind(k), n = dayNum(k);
+  const v = pick(VERSES, Math.floor(n / 2) * 7 + (n % 2)), q = pick(QUOTES, Math.floor(n / 2) * 5 + (n % 2));
+  const body = kind === 'verse'
+    ? `<blockquote class="inspo-text">${esc(v.t)}</blockquote><div class="inspo-ref">${esc(v.ref)} <span>NABRE</span></div>`
+    : `<blockquote class="inspo-text">${esc(q.t)}</blockquote><div class="inspo-ref">${q.by ? esc(q.by) : 'Leanline'}</div>`;
+  return `<div class="card inspo ${kind}">
+    <div class="row between inspo-head"><span class="eyebrow">${kind === 'verse' ? '✝️ Verse of the day' : '💬 Quote of the day'}</span>
+      <div class="mini-seg"><button data-inspo="verse" class="${kind === 'verse' ? 'on' : ''}" aria-label="Show verse">Verse</button><button data-inspo="quote" class="${kind === 'quote' ? 'on' : ''}" aria-label="Show quote">Quote</button></div></div>
+    ${body}
+    <button class="inspo-share" id="inspo-share" aria-label="Share">Share ↗</button>
+  </div>`;
+}
+function inspoText() {
+  const k = todayKey(), n = dayNum(k), kind = inspoKind(k);
+  if (kind === 'verse') { const v = pick(VERSES, Math.floor(n / 2) * 7 + (n % 2)); return `“${v.t}” (${v.ref}, NABRE)`; }
+  const q = pick(QUOTES, Math.floor(n / 2) * 5 + (n % 2)); return `“${q.t}”${q.by ? ` (${q.by})` : ''}`;
 }
 
 /* ═════════════ badges ═════════════ */
@@ -453,23 +537,17 @@ function confetti(palette) {
     if (++f < 180) requestAnimationFrame(tick); else ctx.clearRect(0, 0, innerWidth, innerHeight);
   })();
 }
-function ring(pct, color, size = 150, stroke = 14) {
-  const r = (size - stroke) / 2, C = 2 * Math.PI * r, p = clamp(pct, 0, 1);
-  return `<svg width="${size}" height="${size}"><circle cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" stroke="var(--card2)" stroke-width="${stroke}"/>
-  <circle cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" stroke="${color}" stroke-width="${stroke}" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C * (1 - p)}" style="transition:stroke-dashoffset .6s"/></svg>`;
-}
-
 /* ═════════════ screens ═════════════ */
 function render() {
   const app = $('#app');
   if (!S.profile) { $('#tabbar').classList.add('hidden'); app.innerHTML = onboardingHTML(); bindOnboarding(); return; }
   $('#tabbar').classList.remove('hidden');
+  if (tab === 'badges') { tab = 'ranks'; ranksView = 'badges'; }
   $$('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
-  app.innerHTML = { today: todayHTML, journey: journeyHTML, ranks: ranksHTML, badges: badgesHTML, me: meHTML }[tab]();
-  ({ today: bindToday, me: bindMe }[tab])?.();
+  app.innerHTML = { today: todayHTML, journey: journeyHTML, ranks: ranksHTML, me: meHTML }[tab]();
+  ({ today: bindToday, ranks: bindRanks, me: bindMe }[tab])?.();
 }
 $$('.tab').forEach(t => t.addEventListener('click', () => { haptic(); tab = t.dataset.tab; if (tab === 'today') viewDay = todayKey(); render(); scrollTo(0, 0); }));
-
 /* ── onboarding ── */
 function profileForm(p = {}) {
   const ft = p.heightIn ? Math.floor(p.heightIn / 12) : '', inch = p.heightIn ? p.heightIn % 12 : '';
@@ -518,49 +596,86 @@ function bindOnboarding() {
 }
 
 /* ── today ── */
+const MEALS = [['breakfast', '🌅', 'Breakfast'], ['lunch', '☀️', 'Lunch'], ['dinner', '🌙', 'Dinner'], ['snack', '🍿', 'Snacks']];
+function mealOf(e) {
+  if (e.meal) return e.meal;
+  const h = e.time ? new Date(e.time).getHours() + new Date(e.time).getMinutes() / 60 : 12;
+  return h < 10.5 ? 'breakfast' : h < 15 ? 'lunch' : h < 21 ? 'dinner' : 'snack';
+}
+function greeting() { const h = new Date().getHours(); return h < 5 ? 'Up late' : h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening'; }
 function todayHTML() {
   const k = viewDay, d = peekDay(k), t = totals(k), tgt = targetFor(k), sc = scoreFor(k), isToday = k === todayKey();
-  const left = tgt - t.net, st = streak(isLogged), pct = t.net / tgt;
-  const ringColor = t.net > tgt ? 'var(--bad)' : pct > 0.9 ? 'var(--warn)' : 'var(--accent)';
+  const left = tgt - t.net, st = streak(isLogged), ri = rankIndex(st), pct = clamp(t.net / tgt, 0, 1), over = t.net > tgt;
+  const coach = isToday ? coachLine() : '';
   const entry = (e, type) => `<div class="entry">
       ${e.photo ? `<img class="thumb" src="${e.photo}" alt="">` : `<div class="thumb">${type === 'food' ? (e.ff ? '🍔' : '🍽️') : (e.emoji || '🏃')}</div>`}
       <div class="meta"><div class="name">${esc(e.name)}</div><div class="note">${esc(e.note || (e.time ? new Date(e.time).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : ''))}</div></div>
-      <div class="cal" style="color:${type === 'food' ? 'var(--text)' : 'var(--accent)'}">${type === 'food' ? '' : '−'}${fmt(e.cal)}</div>
+      <div class="cal ${type === 'food' ? '' : 'burn'}">${type === 'food' ? '' : '−'}${fmt(e.cal)}</div>
       <button class="del" data-del="${type}:${e.id}" aria-label="Delete">✕</button></div>`;
+  const groups = MEALS.map(([id, em, label]) => ({ id, em, label, items: d.food.filter(e => mealOf(e) === id) })).filter(g => g.items.length);
+  const bar = (v, max, c) => `<div class="mini-bar"><i style="width:${v / max * 100}%;background:${c}"></i></div>`;
+  const C = 2 * Math.PI * 26;
   return `
-  <div class="topbar">
-    <div class="datenav"><button id="prev" aria-label="Previous day">‹</button><div class="lbl">${relDate(k)}</div><button id="next" aria-label="Next day" ${isToday ? 'disabled style="opacity:.3"' : ''}>›</button></div>
-    <button class="streak-pill ${st ? '' : 'cold'}" id="rank-pill" aria-label="Streak rank">${rankBadge(rankIndex(st), 22)}<span>🔥 <span class="num">${st}</span></span></button>
-  </div>
-  ${isToday ? `<div class="motd">${motd()}</div>` : ''}
-  <div class="card"><div class="hero">
-    <div class="ring">${ring(pct, ringColor)}<div class="center"><div class="v">${fmt(Math.abs(left))}</div><div class="l">${left >= 0 ? 'cal left' : 'cal over'}</div></div></div>
-    <div class="stats">
-      <div class="stat"><div class="k">EATEN</div><div class="v">${fmt(t.eaten)}</div></div>
-      <div class="stat"><div class="k">BURNED</div><div class="v" style="color:var(--accent)">${fmt(t.burned)}</div></div>
-      <div class="stat"><div class="k">TARGET (NET)</div><div class="v">${fmt(tgt)}</div></div>
-    </div></div>
-    <div class="row between" style="margin-top:14px">
-      <span class="sub">Day score</span>
-      <span class="score-chip" style="color:${scoreColor(sc.total)}">${sc.total} <span style="opacity:.7">· ${scoreGrade(sc.total)}</span></span>
+  <section class="band">
+    <div class="band-top">
+      <div class="datenav"><button id="prev" aria-label="Previous day">‹</button><span>${isToday ? niceDate(k, { weekday: 'long', month: 'short', day: 'numeric' }) : relDate(k)}</span><button id="next" aria-label="Next day" ${isToday ? 'disabled' : ''}>›</button></div>
+      <button class="rank-chip" id="rank-pill" aria-label="Streak rank">${rankBadge(ri, 22)}<span>${ri >= 0 ? RANKS[ri].name : 'Unranked'}</span><b>🔥 ${st}</b></button>
     </div>
-    <div class="scorebar"><i style="width:${sc.total}%;background:${scoreColor(sc.total)}"></i></div>
-    <div class="sub" style="margin-top:6px;font-size:12px">Calories ${sc.cal}/60 · Logging ${sc.log}/20 · Exercise ${sc.ex}/20</div>
-  </div>
-  <div class="quick">
-    <button class="qbtn" data-add="food"><span class="e">🍽️</span>Food</button>
-    <button class="qbtn" data-add="exercise"><span class="e">🏃</span>Exercise</button>
-    <button class="qbtn" data-add="weight"><span class="e">⚖️</span>${d.weight ? d.weight + ' lb' : 'Weight'}</button>
-  </div>
-  <div class="card"><h3>Food · ${fmt(t.eaten)} cal</h3>${d.food.map(e => entry(e, 'food')).join('') || '<div class="empty">Nothing logged yet — tap Food above</div>'}</div>
-  <div class="card"><div class="row between"><h3>Exercise · ${fmt(t.burned)} cal</h3><button class="link" id="wh-link" style="margin-top:-10px">History ›</button></div>${d.exercise.map(e => entry(e, 'exercise')).join('') || '<div class="empty">No workouts yet</div>'}</div>`;
+    <div class="band-main">
+      <div>
+        <div class="band-label">${isToday ? greeting() : 'Calories'}</div>
+        <div class="band-num num">${fmt(Math.abs(left))}</div>
+        <div class="band-sub">${left >= 0 ? 'calories left' : 'calories over'} · target ${fmt(tgt)}</div>
+      </div>
+      <div class="score-dial" aria-label="Day score ${sc.total}">
+        <svg viewBox="0 0 60 60"><circle cx="30" cy="30" r="26" fill="none" stroke="rgba(255,255,255,.18)" stroke-width="5"/>
+          <circle cx="30" cy="30" r="26" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C * (1 - sc.total / 100)}" transform="rotate(-90 30 30)"/></svg>
+        <div><b class="num">${sc.total}</b><span>${scoreGrade(sc.total)}</span></div>
+      </div>
+    </div>
+    <div class="fuel ${over ? 'over' : ''}"><i style="width:${pct * 100}%"></i></div>
+    <div class="band-stats">
+      <div><span>Eaten</span><b class="num">${fmt(t.eaten)}</b></div>
+      <div><span>Burned</span><b class="num">${fmt(t.burned)}</b></div>
+      <button id="hero-weight"><span>Weight</span><b class="num">${d.weight || latestWeight(k)}</b></button>
+    </div>
+  </section>
+  <nav class="dock" aria-label="Quick log">
+    <button data-q="food"><span class="ic">🍽️</span>Food</button>
+    <button data-q="ff"><span class="ic">🍔</span>Fast food</button>
+    <button data-q="workout"><span class="ic">💪</span>Workout</button>
+    <button data-q="weight"><span class="ic">⚖️</span>Weigh-in</button>
+  </nav>
+  ${coach ? `<p class="coach">${coach}</p>` : ''}
+  <section class="card score-card">
+    <div class="eyebrow">Day score</div>
+    <div class="score-parts">
+      <div><span>Calories</span>${bar(sc.cal, 60, 'rgb(var(--acc))')}<b class="num">${sc.cal}/60</b></div>
+      <div><span>Logging</span>${bar(sc.log, 20, 'var(--blue)')}<b class="num">${sc.log}/20</b></div>
+      <div><span>Exercise</span>${bar(sc.ex, 20, 'var(--orange)')}<b class="num">${sc.ex}/20</b></div>
+    </div>
+  </section>
+  ${isToday ? inspoCard() : ''}
+  <div class="sec-h"><h2>Meals</h2><span class="sub num">${fmt(t.eaten)} cal</span></div>
+  ${groups.length ? groups.map(g => `<section class="card list-card"><div class="row between group-h"><span>${g.em} ${g.label}</span><span class="num">${fmt(g.items.reduce((a, e) => a + e.cal, 0))} cal</span></div>${g.items.map(e => entry(e, 'food')).join('')}</section>`).join('')
+    : `<button class="card empty-card" data-q="food"><span class="e">🍽️</span><b>Log your first meal</b><small>Snap a photo, type it, or pick fast food</small></button>`}
+  <div class="sec-h"><h2>Workouts</h2><button class="link" id="wh-link">History & PRs</button></div>
+  ${d.exercise.length ? `<section class="card list-card">${d.exercise.map(e => entry(e, 'exercise')).join('')}</section>`
+    : `<button class="card empty-card" data-q="workout"><span class="e">💪</span><b>No workout yet</b><small>Cardio, lifting, sports. It all counts.</small></button>`}`;
 }
 function bindToday() {
   $('#prev').onclick = () => { viewDay = addDays(viewDay, -1); render(); };
-  $('#wh-link').onclick = workoutHistorySheet;
-  $('#rank-pill').onclick = () => { tab = 'ranks'; render(); scrollTo(0, 0); };
   $('#next').onclick = () => { if (viewDay < todayKey()) { viewDay = addDays(viewDay, 1); render(); } };
-  $$('[data-add]').forEach(b => b.onclick = () => { haptic(); ({ food: foodSheet, exercise: exerciseSheet, weight: weightSheet })[b.dataset.add](); });
+  $('#wh-link').onclick = workoutHistorySheet;
+  $('#hero-weight').onclick = weightSheet;
+  $('#rank-pill').onclick = () => { tab = 'ranks'; ranksView = 'rank'; render(); scrollTo(0, 0); };
+  $$('[data-q]').forEach(b => b.onclick = () => { haptic(); ({ food: () => foodSheet(), ff: () => { ffOrder = []; fastFoodSheet(); }, workout: () => exerciseSheet(), weight: weightSheet })[b.dataset.q](); });
+  $$('[data-inspo]').forEach(b => b.onclick = () => { S.settings.inspoToday = { k: todayKey(), kind: b.dataset.inspo }; save(); haptic(); render(); });
+  const share = $('#inspo-share');
+  if (share) share.onclick = async () => {
+    const text = inspoText();
+    try { if (navigator.share) await navigator.share({ text }); else { await navigator.clipboard.writeText(text); toast('Copied'); } } catch { }
+  };
   $$('[data-del]').forEach(b => b.onclick = () => {
     const [type, id] = b.dataset.del.split(':'), list = day(viewDay)[type], e = list.find(x => x.id === id);
     if (!confirm(`Delete “${e.name}”?`)) return;
@@ -583,7 +698,7 @@ function recentFoods() {
   }));
   return [...seen.values()].slice(0, 8);
 }
-function foodSheet() {
+function foodSheet(opts = {}) {
   const recents = recentFoods();
   openSheet(`<h2>🍽️ Log food</h2>
     ${recents.length ? `<div class="sub" style="margin:0 0 8px 4px">Tap to re-add</div><div class="chips">${recents.map((f, i) => `<button class="chip" data-recent="${i}">${esc(f.name.length > 34 ? f.name.slice(0, 32) + '…' : f.name)} <small>${fmt(f.cal)}</small></button>`).join('')}</div>` : ''}
@@ -600,20 +715,22 @@ function foodSheet() {
     let photo = null, estimate = null;
     $$('[data-recent]', sh).forEach(b => b.onclick = () => { const f = recents[+b.dataset.recent]; addEntry('food', { name: f.name, cal: f.cal, note: 'Re-added', photo: f.photo || null, ff: f.ff || null }); });
     $('#ff-open', sh).onclick = () => { ffOrder = []; fastFoodSheet(); };
-    $('#photo-in', sh).onchange = async e => {
-      const file = e.target.files[0]; if (!file) return;
+    const takePhoto = async file => {
+      if (!file) return;
       try {
         photo = await readPhoto(file); estimate = null;
         $('#photo-preview', sh).innerHTML = `<div class="photo-drop"><img src="${photo.ai}" alt=""><button class="x" id="photo-x" type="button">✕</button></div>`;
         $('#photo-x', sh).onclick = ev => { ev.preventDefault(); photo = null; estimate = null; $('#photo-preview', sh).innerHTML = ''; };
       } catch (err) { toast(err.message); }
     };
+    $('#photo-in', sh).onchange = e => takePhoto(e.target.files[0]);
+    if (opts.file) takePhoto(opts.file);
     $('#food-txt', sh).oninput = () => { estimate = null; $('#est', sh).innerHTML = ''; setBtn('Add'); };
     const btn = $('#food-go', sh), setBtn = (h, busy) => { btn.innerHTML = h; btn.disabled = !!busy; };
     btn.onclick = async () => {
       const text = $('#food-txt', sh).value.trim(), cal = Number($('#food-cal', sh).value);
       if (cal > 0) return addEntry('food', { name: text || 'Food', cal: Math.round(cal), photo: photo?.thumb || null });
-      if (estimate) return addEntry('food', { name: estimate.title || text || 'Meal', cal: estimate.total_calories, note: estimate.confidence === 'menu' ? '🍔 Menu values' : `${estimate.confidence || 'AI'} confidence estimate`, photo: photo?.thumb || null });
+      if (estimate) return addEntry('food', { name: estimate.title || text || 'Meal', cal: estimate.total_calories, note: estimate.confidence === 'menu' ? '🍔 Menu values' : estimate.confidence === 'quick' ? 'Quick estimate' : `AI estimate · ${estimate.confidence || 'medium'} confidence`, photo: photo?.thumb || null });
       if (!text && !photo) return toast('Type what you ate or add a photo');
       const local = text ? localFoodEstimate(text) : null;
       if (local?.menuAll && !photo) estimate = local; // every item is on a built-in menu: instant + offline
@@ -623,7 +740,7 @@ function foodSheet() {
         catch (err) { toast(err.message); estimate = local; }
       } else if (photo && !text) { toast('Add a description too. AI isn’t set up yet.'); return; }
       else estimate = local;
-      if (!estimate) { setBtn('Add'); return toast('Couldn’t guess that. Enter the calories.'); }
+      if (!estimate) { setBtn('Add'); $('#est', sh).innerHTML = `<div class="estimate"><b>Not sure about that one.</b><div class="sub">Type the calories above${aiReady() ? '' : ', or turn on AI in Me → AI estimates so it can figure out anything you type or photograph'}.</div></div>`; $('#food-cal', sh).focus(); return; }
       $('#est', sh).innerHTML = `<div class="estimate"><div class="row between"><span class="sub">Estimated</span><span class="tot">${fmt(estimate.total_calories)} cal</span></div>
         <ul>${(estimate.items || []).map(i => `<li>${esc(i.name)}${i.portion ? ` (${esc(i.portion)})` : ''}: ${fmt(i.calories)}</li>`).join('')}</ul>
         ${estimate.note ? `<div class="sub">${esc(estimate.note)}</div>` : ''}</div>`;
@@ -1011,7 +1128,7 @@ function journeyHTML() {
   const pct = clamp(lost / total, 0, 1), proj = projection(), w = weekSummary(0), lw = weekSummary(1);
   const deficitLbs = round(scoredDays().reduce((a, d) => a + (tdee(latestWeight(d.k)) - d.net), 0) / 3500, 1);
   const arrow = (a, b, higherBetter = true) => a === b ? '' : (a > b) === higherBetter ? ' <span style="color:var(--accent)">▲</span>' : ' <span style="color:var(--bad)">▼</span>';
-  return `<div class="page-title">Journey</div>
+  return `<h1 class="page-title">Journey</h1>
   <div class="card">
     <div class="row between"><div><div class="sub">Lost so far</div><div class="big" style="color:var(--accent)">${lost > 0 ? lost : 0} <span style="font-size:18px">lbs</span></div></div>
     <div style="text-align:right"><div class="sub">Current</div><div class="big">${cur}</div></div></div>
@@ -1044,55 +1161,63 @@ function journeyHTML() {
   </div></div>`;
 }
 
-/* ── ranks ── */
+/* ── ranks (rank · best days · badges) ── */
+let ranksView = 'rank';
 function ranksHTML() {
-  const days = scoredDays().sort((a, b) => b.total - a.total || a.net - b.net);
+  const views = [['rank', 'Rank'], ['days', 'Best days'], ['badges', 'Badges']];
+  return `<h1 class="page-title">Ranks</h1>
+  <div class="seg page-seg">${views.map(([k, l]) => `<button data-rv="${k}" class="${ranksView === k ? 'on' : ''}">${l}</button>`).join('')}</div>
+  ${{ rank: rankViewHTML, days: daysViewHTML, badges: badgesHTML }[ranksView]()}`;
+}
+function bindRanks() { $$('[data-rv]').forEach(b => b.onclick = () => { ranksView = b.dataset.rv; haptic(); render(); }); }
+function rankViewHTML() {
   const st = streak(isLogged), tst = streak(isOnTarget);
-  const medal = i => ['🥇', '🥈', '🥉'][i] || `#${i + 1}`;
-  const pod = (d, i, cls = '') => d ? `<div class="pod ${cls}"><div class="m">${medal(i)}</div><div class="sc" style="color:${scoreColor(d.total)}">${d.total}</div><div class="dt">${relDate(d.k)}</div></div>` : '<div class="pod" style="opacity:.3"><div class="m">·</div><div class="sc">–</div><div class="dt">—</div></div>';
   const ri = rankIndex(st), cur = RANKS[ri], next = RANKS[ri + 1], hi = S.records.highestRank;
   const from = cur ? cur.min : 0, pct = next ? clamp((st - from) / (next.min - from), 0, 1) : 1;
   const grad = cur ? `linear-gradient(90deg,${cur.tier.c[1]},${cur.tier.c[0]})` : 'var(--line)';
-  return `<div class="page-title">Rankings</div>
-  <div class="card rank-card">
-    <div class="row" style="gap:14px">${rankBadge(ri, 64)}
-      <div style="flex:1"><div class="sub">Streak rank</div><div class="big" style="font-size:26px">${cur ? cur.name : 'Unranked'}</div>
-      <div class="sub">🔥 ${st}-day logging streak</div></div></div>
+  return `<section class="band rank-hero">
+    <div class="rank-emblem">${rankBadge(ri, 104)}</div>
+    <div class="eyebrow">Streak rank</div>
+    <div class="rank-name">${cur ? cur.name : 'Unranked'}</div>
+    <div class="sub">🔥 ${st}-day logging streak${hi >= 0 ? ` · best rank ${RANKS[hi].name}` : ''}</div>
     <div class="progressbar"><i style="width:${pct * 100}%;background:${grad}"></i></div>
-    <div class="row between sub"><span>${next ? (st ? `${next.min - st} more day${next.min - st === 1 ? '' : 's'} to <b style="color:var(--text)">${next.name}</b>` : 'Log food today to reach <b style="color:var(--text)">Bronze I</b>') : 'Top rank reached 👑'}</span>
-      <span>${hi >= 0 ? `Highest: ${RANKS[hi].name}` : ''}</span></div>
+    <div class="sub">${next ? (st ? `<b class="num" style="color:var(--text)">${next.min - st}</b> more day${next.min - st === 1 ? '' : 's'} to <b style="color:var(--text)">${next.name}</b>` : 'Log food today to reach <b style="color:var(--text)">Bronze I</b>') : 'Top rank reached 👑'}</div>
+  </section>
+  <div class="grid2" style="margin-bottom:12px">
+    <section class="card stat-card"><div class="eyebrow">🔥 Logging streak</div><div class="big num">${st}</div><div class="sub">Best ${S.records.bestStreak} days</div></section>
+    <section class="card stat-card"><div class="eyebrow">🎯 On target</div><div class="big num">${tst}</div><div class="sub">Best ${S.records.bestTargetStreak} days</div></section>
+  </div>
+  <section class="card"><div class="eyebrow" style="margin-bottom:10px">The ladder</div>
     <div class="ladder">${TIERS.map((t, ti) => `<div class="ladder-row"><span class="ladder-name">${t.n}</span>${[0, 1, 2].map(l => {
       const i = ti * 3 + l; return `<div class="ladder-step ${i <= hi ? 'got' : ''} ${i === ri ? 'now' : ''}">${rankBadge(i, 30)}<span>${RANK_MIN[i]}d</span></div>`;
-    }).join('')}</div>`).join('')}</div>
-  </div>
-  <div class="grid2" style="margin-bottom:12px">
-    <div class="card" style="margin:0"><h3>🔥 Logging streak</h3><div class="big">${st}</div><div class="sub">Best: ${S.records.bestStreak} days</div></div>
-    <div class="card" style="margin:0"><h3>🎯 On-target streak</h3><div class="big">${tst}</div><div class="sub">Best: ${S.records.bestTargetStreak} days</div></div>
-  </div>
-  ${days.length ? `<div class="podium">${pod(days[1], 1)}${pod(days[0], 0, 'first')}${pod(days[2], 2)}</div>` : ''}
-  <div class="card"><h3>All days · best to worst</h3>
+    }).join('')}</div>`).join('')}</div></section>`;
+}
+function daysViewHTML() {
+  const days = scoredDays().sort((a, b) => b.total - a.total || a.net - b.net);
+  const medal = i => ['🥇', '🥈', '🥉'][i] || `${i + 1}`;
+  const pod = (d, i, cls = '') => d ? `<div class="pod ${cls}"><div class="m">${medal(i)}</div><div class="sc num" style="color:${scoreColor(d.total)}">${d.total}</div><div class="dt">${relDate(d.k)}</div></div>` : '<div class="pod" style="opacity:.3"><div class="m">·</div><div class="sc">–</div><div class="dt">—</div></div>';
+  return `${days.length ? `<div class="podium">${pod(days[1], 1)}${pod(days[0], 0, 'first')}${pod(days[2], 2)}</div>` : ''}
+  <section class="card list-card">
     ${days.map((d, i) => `<div class="rank"><div class="pos">${medal(i)}</div>
       <div class="meta"><div class="d">${niceDate(d.k)}${d.k === todayKey() ? ' · Today' : ''}</div>
-      <div class="s">🍽️ ${fmt(d.eaten)} · 🏃 ${fmt(d.burned)} · net ${fmt(d.net)}</div>
+      <div class="s">🍽️ ${fmt(d.eaten)} · 🔥 ${fmt(d.burned)} · net ${fmt(d.net)}</div>
       <div class="scorebar"><i style="width:${d.total}%;background:${scoreColor(d.total)}"></i></div></div>
-      <div class="score" style="color:${scoreColor(d.total)}">${d.total}</div></div>`).join('') || '<div class="empty">Log your first day to get ranked</div>'}
-  </div>
+      <div class="score num" style="color:${scoreColor(d.total)}">${d.total}</div></div>`).join('') || '<div class="empty">Log your first day to get ranked</div>'}
+  </section>
   <p class="sub" style="text-align:center">Score = calories on target (60) + logging meals & weigh-in (20) + exercise (20)</p>`;
 }
-
-/* ── badges ── */
 function badgesHTML() {
   const got = BADGES.filter(b => S.badges[b.id]).length;
-  return `<div class="page-title">Badges</div><p class="sub" style="margin-top:-8px">${got} of ${BADGES.length} unlocked</p>
-  <div class="progressbar"><i style="width:${got / BADGES.length * 100}%"></i></div>
-  <div class="badges" style="margin-top:14px">${BADGES.map(b => `<div class="badge ${S.badges[b.id] ? '' : 'locked'}"><div class="e">${b.e}</div><div class="t">${esc(b.t)}</div>
+  return `<section class="card"><div class="row between"><span class="eyebrow">Collected</span><b class="num">${got} / ${BADGES.length}</b></div>
+  <div class="progressbar"><i style="width:${got / BADGES.length * 100}%"></i></div></section>
+  <div class="badges">${BADGES.map(b => `<div class="badge ${S.badges[b.id] ? '' : 'locked'}"><div class="e">${b.e}</div><div class="t">${esc(b.t)}</div>
     <div class="dsc">${S.badges[b.id] ? `✓ ${niceDate(S.badges[b.id], { month: 'short', day: 'numeric' })}` : esc(b.d)}</div></div>`).join('')}</div>`;
 }
 
 /* ── me / settings ── */
 function meHTML() {
   const p = S.profile, used = (() => { try { return Math.round((localStorage.getItem(STORE_KEY) || '').length / 1024); } catch { return 0; } })();
-  return `<div class="page-title">Me</div>
+  return `<h1 class="page-title">Me</h1>
   <div class="card"><h3>Your numbers</h3><div class="settings-list">
     <div class="item"><span>Daily target (net)</span><b>${fmt(targetFor())} cal</b></div>
     <div class="item"><span>Maintenance (TDEE)</span><b>${fmt(tdee(latestWeight()))} cal</b></div>
@@ -1108,8 +1233,13 @@ function meHTML() {
   <div class="card"><h3>Backup</h3><p class="sub" style="margin-top:0">Your data lives only on this phone (${used} KB). Export a backup now and then — save it to Files or iCloud.</p>
     <div class="grid2"><button class="btn secondary" id="exp">⬇️ Export</button><label class="btn secondary">⬆️ Import<input type="file" id="imp" accept="application/json,.json" hidden></label></div>
   </div>
+  <div class="card"><h3>Daily inspiration</h3>
+    <div class="seg" id="inspo-pref">${[['both', 'Both'], ['verse', 'Verses'], ['quote', 'Quotes']].map(([k, l]) => `<button data-ip="${k}" class="${(S.settings.inspo || 'both') === k ? 'on' : ''}">${l}</button>`).join('')}</div>
+    <p class="sub" style="margin-bottom:0">“Both” alternates a Bible verse and a quote each day. Tap Verse/Quote on the card to switch for the day.</p>
+  </div>
   <div class="card"><button class="btn danger" id="reset">Erase everything</button></div>
-  <p class="sub" style="text-align:center">Leanline · estimates are guides, not medical advice</p>`;
+  <p class="sub" style="text-align:center">Leanline · estimates are guides, not medical advice</p>
+  <p class="legal">${esc(NABRE_NOTICE)}</p>`;
 }
 function bindMe() {
   const root = $('#prof'); bindSegs(root);
@@ -1118,6 +1248,7 @@ function bindMe() {
     if (np.startWeight !== S.profile.startWeight) day(S.profile.startDate).weight = np.startWeight;
     S.profile = np; save(); evaluate(); render(); toast(`Saved · new target ${fmt(targetFor())} cal`);
   };
+  $$('[data-ip]').forEach(b => b.onclick = () => { S.settings.inspo = b.dataset.ip; delete S.settings.inspoToday; save(); render(); toast('Saved'); });
   $('#api-save').onclick = () => { S.settings.apiUrl = $('#api-url').value.trim(); S.settings.apiCode = $('#api-code').value.trim(); save(); toast('AI settings saved'); };
   $('#api-test').onclick = async () => {
     S.settings.apiUrl = $('#api-url').value.trim(); S.settings.apiCode = $('#api-code').value.trim(); save();
