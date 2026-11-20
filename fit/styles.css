@@ -355,3 +355,80 @@ body[data-tier] .card{border-color:rgba(var(--rk),.18)}
 .badge{background:var(--card);border-color:var(--line)}
 .legal{font-size:10.5px;line-height:1.45;color:var(--dim);text-align:center;margin:14px 8px 0}
 #app{padding-bottom:calc(var(--safe-bot) + 128px)}
+
+/* ═════════════ v4: rank-themed look ═════════════ */
+:root{--acc:74,222,128;--band1:#05211a;--band2:#0f6447;--band3:#1e9f78}
+body{--accent:rgb(var(--acc));--accent2:rgb(var(--acc))}
+#app{padding-top:0;padding-bottom:calc(var(--safe-bot) + 110px)}
+.page-title{margin-top:calc(var(--safe-top) + 12px)}
+.onb-hero{padding-top:calc(var(--safe-top) + 24px)}
+
+/* notifications: fully hidden when not showing (no peeking under the status bar) */
+.toast{top:calc(var(--safe-top) + 10px);opacity:0;visibility:hidden;transform:translate(-50%,-20px);transition:transform .3s,opacity .25s,visibility 0s .3s}
+.toast.show{opacity:1;visibility:visible;transform:translate(-50%,0);transition:transform .3s,opacity .25s}
+
+/* buttons, links, tabs follow the rank color */
+.btn{background:linear-gradient(135deg,rgba(var(--acc),.95),rgba(var(--acc),.72));color:#0b0d12;box-shadow:0 8px 22px rgba(var(--acc),.28)}
+.btn.secondary{background:var(--card2);color:var(--text);box-shadow:none}
+.btn.danger{background:#3a1515;color:var(--bad);box-shadow:none}
+.link{color:rgb(var(--acc))}
+.tabbar-inner{grid-template-columns:repeat(4,1fr)}
+.tab.active{color:var(--text)}
+.tab.active svg{stroke:rgb(var(--acc))}
+.chip.on,.chip.pick.on{background:rgba(var(--acc),.16);border-color:rgba(var(--acc),.5)}
+.input:focus{border-color:rgb(var(--acc))}
+.progressbar i{background:linear-gradient(90deg,rgba(var(--acc),.7),rgb(var(--acc)))}
+
+/* header band: full-bleed, in your rank's colors */
+.band{position:relative;overflow:hidden;margin:0 -16px;padding:calc(var(--safe-top) + 10px) 20px 46px;border-radius:0 0 32px 32px;color:#fff;
+  background:linear-gradient(155deg,var(--band1) 0%,var(--band2) 58%,var(--band3) 100%);box-shadow:0 18px 40px rgba(var(--rk),.22)}
+.band>*{position:relative;z-index:1}
+.band::before,.band::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:0}
+/* level II adds texture + glow, level III adds a moving sheen, Diamond adds sparkle */
+body[data-lvl="2"] .band::before,body[data-lvl="3"] .band::before{background:radial-gradient(70% 90% at 100% 0%,rgba(255,255,255,.22),transparent 60%),repeating-linear-gradient(135deg,rgba(255,255,255,.05) 0 2px,transparent 2px 14px)}
+body[data-lvl="3"] .band::after{background:linear-gradient(110deg,transparent 35%,rgba(255,255,255,.22) 48%,rgba(255,255,255,.05) 55%,transparent 65%);background-size:260% 100%;animation:bandsheen 5.5s ease-in-out infinite}
+body[data-tier="diamond"] .band::before{background:radial-gradient(2px 2px at 12% 30%,#fff,transparent),radial-gradient(1.5px 1.5px at 30% 72%,#e0f2fe,transparent),radial-gradient(2px 2px at 58% 18%,#fff,transparent),radial-gradient(1.5px 1.5px at 76% 62%,#ede9fe,transparent),radial-gradient(2px 2px at 90% 28%,#fff,transparent),radial-gradient(70% 90% at 100% 0%,rgba(255,255,255,.25),transparent 60%);animation:twinkle 3.5s ease-in-out infinite alternate}
+body[data-tier="diamond"] .band::after{background:linear-gradient(110deg,transparent 35%,rgba(186,230,253,.28) 47%,rgba(221,214,254,.18) 53%,transparent 65%);background-size:260% 100%;animation:bandsheen 4.5s ease-in-out infinite}
+@keyframes bandsheen{0%{background-position:120% 0}60%,100%{background-position:-60% 0}}
+@keyframes twinkle{from{opacity:.55}to{opacity:1}}
+@media (prefers-reduced-motion:reduce){.band::before,.band::after{animation:none!important}}
+.band-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.band .datenav{display:flex;align-items:center;gap:0;margin-left:-10px;font-size:14px;font-weight:700;color:rgba(255,255,255,.85)}
+.band .datenav button{width:34px;height:34px;font-size:22px;color:rgba(255,255,255,.8);border-radius:10px}
+.band .datenav button:disabled{opacity:.25}
+.rank-chip{display:flex;align-items:center;gap:6px;padding:5px 10px 5px 6px;border-radius:999px;background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.22);color:#fff;font-size:13px;font-weight:700;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.rank-chip b{margin-left:2px}
+.band-main{display:flex;align-items:center;justify-content:space-between;margin-top:16px}
+.band-label{font-size:15px;font-weight:700;color:rgba(255,255,255,.8)}
+.band-num{font-size:60px;font-weight:800;letter-spacing:-.03em;line-height:1;margin:4px 0 6px;text-shadow:0 2px 14px rgba(0,0,0,.25)}
+.band-sub{font-size:14px;color:rgba(255,255,255,.8);font-weight:600}
+.score-dial{position:relative;width:78px;height:78px;flex:none}
+.score-dial svg{width:100%;height:100%}
+.score-dial>div{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1}
+.score-dial b{font-size:24px;font-family:var(--round)}
+.score-dial span{font-size:11px;font-weight:800;opacity:.8;margin-top:3px}
+.fuel{height:10px;border-radius:5px;background:rgba(0,0,0,.28);margin:18px 0 14px;overflow:hidden}
+.fuel i{display:block;height:100%;border-radius:5px;background:linear-gradient(90deg,rgba(255,255,255,.75),#fff);transition:width .8s cubic-bezier(.2,.9,.3,1)}
+.fuel.over i{background:linear-gradient(90deg,#fda4af,#fb7185)}
+.band-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.band-stats>*{display:flex;flex-direction:column;gap:2px;padding:9px 12px;border-radius:14px;background:rgba(0,0,0,.2);border:1px solid rgba(255,255,255,.12);text-align:left;color:#fff}
+.band-stats span{font-size:11.5px;font-weight:700;color:rgba(255,255,255,.72)}
+.band-stats b{font-size:19px}
+
+/* quick-log dock: four buttons side by side, pinned while you scroll */
+.dock{position:sticky;top:calc(var(--safe-top) + 6px);z-index:5;display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin:-30px 4px 14px;padding:6px;border-radius:22px;
+  background:rgba(18,21,28,.86);border:1px solid rgba(var(--acc),.25);backdrop-filter:blur(22px) saturate(160%);-webkit-backdrop-filter:blur(22px) saturate(160%);box-shadow:0 12px 30px rgba(0,0,0,.45)}
+.dock button{display:flex;flex-direction:column;align-items:center;gap:4px;padding:9px 2px 8px;border-radius:16px;font-size:12px;font-weight:700;color:var(--text)}
+.dock button:active{background:rgba(var(--acc),.14)}
+.dock .ic{width:40px;height:40px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:22px;background:rgba(var(--acc),.14);border:1px solid rgba(var(--acc),.28)}
+.coach{margin:0 6px 12px;text-align:left;font-size:14px}
+.score-card .score-parts{margin-top:10px}
+.score-card .score-parts>div{grid-template-columns:64px 1fr 44px}
+.score-card .score-parts b{font-size:12px;color:var(--muted);text-align:right}
+
+/* ranks hero shares the band look */
+.rank-hero{margin:0 0 14px;padding:24px 20px 22px;border-radius:28px;display:flex;flex-direction:column;align-items:center;text-align:center}
+.rank-hero .eyebrow,.rank-hero .sub{color:rgba(255,255,255,.78)}
+.rank-hero .sub b{color:#fff!important}
+.rank-hero .progressbar{background:rgba(0,0,0,.28)}
+.rank-hero .progressbar i{background:linear-gradient(90deg,rgba(255,255,255,.7),#fff)!important}

@@ -127,10 +127,10 @@ function longest(test) {
 }
 /* ═════════════ streak ranks ═════════════ */
 const TIERS = [
-  { id: 'bronze', n: 'Bronze', c: ['#e3a46b', '#8a4b1d'], rgb: '205,127,50', rgb2: '150,82,32', confetti: ['#cd7f32', '#e3a46b', '#8a4b1d', '#f3d2b0'] },
-  { id: 'silver', n: 'Silver', c: ['#eef2f7', '#8c96a6'], rgb: '196,206,220', rgb2: '120,132,152', confetti: ['#e5e9f0', '#b8c1cf', '#8c96a6', '#ffffff'] },
-  { id: 'gold', n: 'Gold', c: ['#ffe08a', '#b8860b'], rgb: '240,190,60', rgb2: '184,134,11', confetti: ['#f5c542', '#ffe08a', '#b8860b', '#fff4cc'] },
-  { id: 'diamond', n: 'Diamond', c: ['#67e8f9', '#8b5cf6'], rgb: '103,232,249', rgb2: '139,92,246', confetti: ['#7dd3fc', '#a5f3fc', '#a78bfa', '#e0e7ff'] },
+  { id: 'bronze', n: 'Bronze', c: ['#e3a46b', '#8a4b1d'], rgb: '205,127,50', rgb2: '150,82,32', acc: '236,166,104', band: ['#2b1407', '#8a4c1f', '#c97f3e'], confetti: ['#cd7f32', '#e3a46b', '#8a4b1d', '#f3d2b0'] },
+  { id: 'silver', n: 'Silver', c: ['#eef2f7', '#8c96a6'], rgb: '196,206,220', rgb2: '120,132,152', acc: '218,226,236', band: ['#171b23', '#566174', '#aab4c3'], confetti: ['#e5e9f0', '#b8c1cf', '#8c96a6', '#ffffff'] },
+  { id: 'gold', n: 'Gold', c: ['#ffe08a', '#b8860b'], rgb: '240,190,60', rgb2: '184,134,11', acc: '247,201,72', band: ['#271c03', '#8c650c', '#dcaa2c'], confetti: ['#f5c542', '#ffe08a', '#b8860b', '#fff4cc'] },
+  { id: 'diamond', n: 'Diamond', c: ['#67e8f9', '#8b5cf6'], rgb: '103,232,249', rgb2: '139,92,246', acc: '110,231,249', band: ['#0a1730', '#16698a', '#6d4fe0'], confetti: ['#7dd3fc', '#a5f3fc', '#a78bfa', '#e0e7ff'] },
 ];
 const RANK_MIN = [1, 3, 5, 7, 10, 14, 21, 30, 45, 60, 90, 120];
 const RANKS = RANK_MIN.map((min, i) => ({ i, min, tier: TIERS[(i / 3) | 0], lvl: (i % 3) + 1, name: `${TIERS[(i / 3) | 0].n} ${['I', 'II', 'III'][i % 3]}` }));
@@ -144,12 +144,14 @@ function rankBadge(i, size = 28) {
     <text x="16" y="20.5" text-anchor="middle" font-size="${r.lvl === 3 ? 9.5 : 11}" font-weight="800" fill="rgba(20,16,10,.72)" font-family="-apple-system,system-ui,sans-serif">${['I', 'II', 'III'][r.lvl - 1]}</text></svg>`;
 }
 /** Tint the app background to the current rank (subtle; richer per level). */
+const BASE_THEME = { acc: '74,222,128', band: ['#05211a', '#0f6447', '#1e9f78'], rgb: '74,222,128', rgb2: '45,212,191' };
 function applyRankTheme() {
-  const b = document.body, i = S.profile ? rankIndex(streak(isLogged)) : -1;
-  if (i < 0) { delete b.dataset.tier; delete b.dataset.lvl; return; }
-  const r = RANKS[i];
-  b.dataset.tier = r.tier.id; b.dataset.lvl = r.lvl;
-  b.style.setProperty('--rk', r.tier.rgb); b.style.setProperty('--rk2', r.tier.rgb2);
+  const b = document.body, i = S.profile ? rankIndex(streak(isLogged)) : -1, r = RANKS[i];
+  const th = r ? r.tier : BASE_THEME;
+  if (r) { b.dataset.tier = r.tier.id; b.dataset.lvl = r.lvl; } else { delete b.dataset.tier; delete b.dataset.lvl; }
+  b.style.setProperty('--rk', th.rgb); b.style.setProperty('--rk2', th.rgb2); b.style.setProperty('--acc', th.acc);
+  b.style.setProperty('--band1', th.band[0]); b.style.setProperty('--band2', th.band[1]); b.style.setProperty('--band3', th.band[2]);
+  $('meta[name="theme-color"]')?.setAttribute('content', th.band[0]);
 }
 
 function scoredDays() {
@@ -183,22 +185,55 @@ function projection() {
 }
 
 /* ═════════════ offline estimators (used when AI isn't set up) ═════════════ */
-const FOODS = [ // [keywords, kcal per unit, unit label]
-  [['egg'], 75, 'egg'], [['toast', 'bread', 'slice'], 80, 'slice'], [['bagel'], 280, 'bagel'], [['butter'], 100, 'tbsp'],
-  [['banana'], 105, 'banana'], [['apple'], 95, 'apple'], [['orange'], 65, 'orange'], [['grape'], 100, 'cup'], [['berries', 'strawberr', 'blueberr'], 70, 'cup'],
-  [['oatmeal', 'oats'], 160, 'bowl'], [['cereal'], 220, 'bowl'], [['yogurt', 'yoghurt'], 150, 'cup'], [['granola'], 250, 'half cup'],
-  [['milk'], 120, 'cup'], [['coffee'], 5, 'cup'], [['latte'], 190, 'grande'], [['frappuccino', 'frappe'], 380, 'grande'], [['soda', 'coke', 'pepsi', 'sprite'], 150, 'can'],
-  [['juice'], 120, 'cup'], [['beer'], 150, 'beer'], [['wine'], 125, 'glass'], [['energy drink', 'monster', 'red bull'], 160, 'can'], [['protein shake', 'shake'], 160, 'shake'],
-  [['chicken breast', 'grilled chicken'], 280, 'breast'], [['chicken'], 300, 'serving'], [['nugget'], 48, 'nugget'], [['wing'], 90, 'wing'], [['tender', 'strip'], 120, 'tender'],
-  [['steak'], 550, 'steak'], [['burger', 'cheeseburger'], 550, 'burger'], [['hot dog'], 290, 'hot dog'], [['bacon'], 45, 'strip'], [['sausage'], 190, 'link'],
-  [['salmon'], 360, 'fillet'], [['tuna'], 180, 'can'], [['shrimp'], 120, 'serving'], [['fish'], 250, 'fillet'],
-  [['pizza'], 285, 'slice'], [['taco'], 210, 'taco'], [['burrito'], 750, 'burrito'], [['quesadilla'], 520, 'quesadilla'], [['nachos'], 650, 'plate'],
-  [['beef n cheddar', 'roast beef'], 450, 'sandwich'], [['sandwich', 'sub'], 450, 'sandwich'], [['wrap'], 450, 'wrap'], [['sushi roll', 'roll'], 300, 'roll'], [['ramen'], 450, 'bowl'], [['pho'], 450, 'bowl'],
-  [['rice'], 205, 'cup'], [['pasta', 'spaghetti', 'noodle', 'mac'], 400, 'plate'], [['potato'], 160, 'potato'], [['fries'], 380, 'medium'], [['chips'], 150, 'bag'],
-  [['salad'], 200, 'bowl'], [['soup'], 200, 'bowl'], [['broccoli', 'veggie', 'vegetable', 'green bean', 'carrot'], 50, 'cup'], [['avocado'], 240, 'avocado'],
-  [['cheese'], 110, 'slice'], [['peanut butter', 'pb'], 190, '2 tbsp'], [['pb&j', 'pbj'], 380, 'sandwich'], [['nuts', 'almond', 'peanut', 'cashew'], 170, 'handful'],
-  [['protein bar', 'granola bar', 'bar'], 220, 'bar'], [['cookie'], 150, 'cookie'], [['donut', 'doughnut'], 260, 'donut'], [['muffin'], 420, 'muffin'], [['pancake'], 175, 'pancake'], [['waffle'], 220, 'waffle'],
-  [['ice cream'], 270, 'cup'], [['chocolate', 'candy'], 220, 'bar'], [['cake'], 350, 'slice'], [['popcorn'], 130, 'cup bag'],
+// Offline food list: [keywords (whole words; plurals handled), kcal per unit, unit]. Longest keyword wins.
+const FOODS = [
+  // breakfast
+  [['egg', 'eggs over easy', 'fried egg', 'scrambled egg', 'boiled egg'], 80, 'egg'], [['egg white'], 17, 'egg white'], [['omelet', 'omelette'], 350, 'omelet'],
+  [['bacon', 'bacon strip'], 45, 'strip'], [['turkey bacon'], 35, 'strip'], [['sausage', 'sausage link'], 170, 'link'], [['sausage patty'], 200, 'patty'],
+  [['pancake'], 175, 'pancake'], [['waffle'], 220, 'waffle'], [['french toast'], 230, 'slice'], [['syrup', 'maple syrup'], 200, 'serving'],
+  [['toast', 'bread', 'slice of bread', 'piece of toast'], 80, 'slice'], [['english muffin'], 135, 'muffin'], [['bagel'], 280, 'bagel'], [['biscuit'], 250, 'biscuit'],
+  [['biscuits and gravy'], 600, 'plate'], [['gravy'], 100, 'serving'], [['hash brown', 'hashbrown'], 150, 'serving'], [['grits'], 180, 'bowl'],
+  [['butter'], 100, 'tbsp'], [['cream cheese'], 100, '2 tbsp'], [['jelly', 'jam'], 50, 'tbsp'], [['honey'], 64, 'tbsp'],
+  [['oatmeal', 'oats'], 160, 'bowl'], [['cereal'], 220, 'bowl'], [['yogurt', 'yoghurt', 'greek yogurt'], 150, 'cup'], [['granola'], 250, 'half cup'],
+  [['breakfast burrito'], 550, 'burrito'], [['breakfast taco'], 250, 'taco'], [['breakfast sandwich'], 450, 'sandwich'], [['croissant'], 270, 'croissant'],
+  [['muffin'], 420, 'muffin'], [['donut', 'doughnut'], 260, 'donut'], [['cinnamon roll'], 420, 'roll'], [['kolache'], 300, 'kolache'],
+  // fruit & veg
+  [['banana'], 105, 'banana'], [['apple'], 95, 'apple'], [['orange'], 65, 'orange'], [['grape'], 100, 'cup'], [['berries', 'strawberries', 'blueberries', 'strawberry', 'blueberry'], 70, 'cup'],
+  [['watermelon'], 85, 'cup'], [['pineapple'], 80, 'cup'], [['mango'], 200, 'mango'], [['peach'], 60, 'peach'], [['fruit', 'fruit cup'], 80, 'cup'],
+  [['salad', 'side salad'], 200, 'bowl'], [['caesar salad'], 450, 'bowl'], [['broccoli', 'veggies', 'vegetables', 'green beans', 'carrots', 'corn', 'peas', 'spinach'], 60, 'cup'],
+  [['avocado'], 240, 'avocado'], [['guacamole', 'guac'], 230, 'half cup'], [['pickle'], 5, 'pickle'],
+  // mains
+  [['chicken', 'chicken breast', 'grilled chicken', 'baked chicken'], 280, 'breast'], [['fried chicken'], 400, 'piece'], [['nugget', 'chicken nugget'], 48, 'nugget'],
+  [['wing', 'chicken wing', 'hot wing'], 90, 'wing'], [['tender', 'chicken tender', 'chicken strip'], 130, 'tender'], [['rotisserie chicken'], 450, 'quarter'],
+  [['steak'], 600, 'steak'], [['ribeye'], 750, 'steak'], [['brisket'], 350, 'serving'], [['ribs', 'rib'], 900, 'half rack'], [['pulled pork'], 400, 'serving'],
+  [['pork chop'], 300, 'chop'], [['ham'], 60, 'slice'], [['turkey'], 50, 'slice'], [['meatball'], 75, 'meatball'], [['meatloaf'], 350, 'slice'],
+  [['burger', 'hamburger', 'cheeseburger'], 600, 'burger'], [['hot dog', 'corn dog'], 290, 'hot dog'],
+  [['salmon'], 360, 'fillet'], [['tuna'], 180, 'can'], [['shrimp'], 120, 'serving'], [['fish', 'tilapia', 'catfish', 'cod'], 250, 'fillet'], [['fish sticks'], 50, 'stick'],
+  [['pizza', 'slice of pizza', 'pizza slice', 'pepperoni pizza', 'cheese pizza'], 285, 'slice'], [['personal pizza'], 800, 'pizza'],
+  [['taco', 'street taco'], 200, 'taco'], [['burrito'], 750, 'burrito'], [['burrito bowl'], 700, 'bowl'], [['quesadilla'], 520, 'quesadilla'], [['nachos'], 650, 'plate'],
+  [['fajita', 'fajitas', 'chicken fajitas', 'beef fajitas', 'fajita chicken', 'fajita beef', 'steak fajitas', 'fajita plate'], 900, 'plate'], [['enchilada'], 330, 'enchilada'], [['tamale'], 285, 'tamale'],
+  [['tortilla', 'flour tortilla'], 140, 'tortilla'], [['chips and salsa', 'tortilla chips'], 430, 'basket'], [['queso'], 120, 'quarter cup'], [['salsa', 'pico'], 15, 'serving'],
+  [['refried beans', 'beans', 'black beans', 'charro beans'], 220, 'cup'], [['mexican rice', 'spanish rice'], 220, 'cup'], [['sour cream'], 60, '2 tbsp'],
+  [['sandwich', 'sub', 'hoagie'], 450, 'sandwich'], [['grilled cheese'], 440, 'sandwich'], [['pbj', 'pb and j', 'peanut butter and jelly'], 380, 'sandwich'],
+  [['beef n cheddar', 'roast beef'], 450, 'sandwich'], [['wrap'], 450, 'wrap'], [['sushi', 'sushi roll', 'roll of sushi'], 300, 'roll'], [['ramen'], 450, 'bowl'], [['pho'], 450, 'bowl'],
+  [['fried rice'], 520, 'plate'], [['orange chicken'], 490, 'serving'], [['lo mein', 'chow mein'], 500, 'plate'], [['egg roll'], 200, 'egg roll'], [['dumpling', 'potsticker'], 60, 'dumpling'],
+  [['rice', 'white rice', 'brown rice'], 205, 'cup'], [['pasta', 'spaghetti', 'noodles', 'penne', 'fettuccine'], 400, 'plate'], [['spaghetti and meatballs'], 700, 'plate'],
+  [['lasagna'], 450, 'piece'], [['mac and cheese', 'mac n cheese', 'macaroni'], 400, 'cup'], [['alfredo'], 900, 'plate'],
+  [['potato', 'baked potato'], 160, 'potato'], [['mashed potatoes'], 240, 'cup'], [['sweet potato'], 115, 'potato'], [['fries', 'french fries'], 380, 'serving'], [['tots', 'tater tots'], 350, 'serving'],
+  [['chili'], 300, 'bowl'], [['soup'], 200, 'bowl'], [['stew'], 350, 'bowl'], [['casserole'], 400, 'serving'], [['pot pie'], 650, 'pie'], [['gumbo'], 350, 'bowl'],
+  [['cheese', 'slice of cheese'], 110, 'slice'], [['string cheese'], 80, 'stick'], [['peanut butter'], 190, '2 tbsp'], [['nuts', 'almonds', 'peanuts', 'cashews', 'trail mix'], 170, 'handful'],
+  [['hummus'], 70, '2 tbsp'], [['crackers'], 130, 'serving'], [['pretzels'], 110, 'serving'], [['chips', 'potato chips', 'doritos', 'cheetos'], 150, 'bag'], [['popcorn'], 130, 'cup bag'],
+  // sweets & snacks
+  [['candy bar', 'snickers', 'kit kat', 'twix', 'reeses', 'chocolate bar', 'milky way', 'butterfinger'], 230, 'bar'], [['candy', 'skittles', 'm and ms', 'gummy bears', 'starburst'], 220, 'pack'],
+  [['chocolate'], 210, 'bar'], [['protein bar', 'granola bar', 'cliff bar', 'quest bar'], 210, 'bar'], [['cookie'], 150, 'cookie'], [['brownie'], 250, 'brownie'],
+  [['cake', 'slice of cake'], 350, 'slice'], [['cupcake'], 300, 'cupcake'], [['pie', 'slice of pie'], 400, 'slice'], [['cheesecake'], 450, 'slice'],
+  [['ice cream'], 270, 'cup'], [['milkshake', 'shake'], 600, 'shake'], [['pop tart', 'poptart'], 200, 'pastry'], [['rice krispie treat'], 90, 'bar'],
+  // drinks
+  [['milk'], 120, 'cup'], [['chocolate milk'], 190, 'cup'], [['coffee', 'black coffee'], 5, 'cup'], [['latte'], 190, 'grande'], [['frappuccino', 'frappe'], 380, 'grande'],
+  [['soda', 'coke', 'pepsi', 'sprite', 'dr pepper', 'mountain dew', 'root beer'], 150, 'can'], [['diet coke', 'diet soda', 'coke zero', 'diet dr pepper', 'water', 'sparkling water'], 0, 'drink'],
+  [['sweet tea'], 180, 'glass'], [['lemonade'], 200, 'glass'], [['juice', 'orange juice', 'apple juice'], 120, 'cup'], [['smoothie'], 350, 'smoothie'],
+  [['beer'], 150, 'beer'], [['light beer', 'michelob ultra', 'bud light', 'coors light'], 100, 'beer'], [['wine', 'glass of wine'], 125, 'glass'], [['margarita'], 300, 'drink'],
+  [['energy drink', 'monster', 'red bull', 'celsius'], 160, 'can'], [['protein shake'], 160, 'shake'], [['gatorade', 'powerade'], 140, 'bottle'],
 ];
 const NUMWORDS = { a: 1, an: 1, one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, half: 0.5, couple: 2, few: 3 };
 
@@ -291,24 +326,54 @@ function splitFoods(text) {
   // "Whopper, no mayo" → the tweak belongs to the item before it.
   return parts.reduce((out, p) => { if (out.length && /^(no|extra|add|light|without|hold the|diet|zero)\b/.test(p) && !/^(diet|zero) /.test(p)) out[out.length - 1] += ' ' + p; else out.push(p); return out; }, []);
 }
+/* Generic (non-menu) foods: find every food word in a phrase, longest match first. */
+const FOOD_KEYS = FOODS.flatMap(f => f[0].map(k => ({ k: ffNorm(k).trim(), f }))).sort((a, b) => b.k.length - a.k.length);
+const QTY_SKIP = new Set(['piece', 'pieces', 'slice', 'slices', 'strip', 'strips', 'cup', 'cups', 'of', 'x', 'large', 'big', 'small', 'medium', 'scoop', 'scoops', 'bowl', 'bowls', 'plate', 'plates', 'handful', 'bag', 'can', 'cans', 'glass', 'glasses', 'serving', 'servings', 'homemade', 'home', 'made', 'fried', 'scrambled', 'grilled', 'baked', 'boiled', 'over', 'easy', 'hard']);
+const FILLER = new Set([...QTY_SKIP, 'and', 'with', 'a', 'an', 'the', 'some', 'my', 'had', 'ate', 'for', 'on', 'in', 'w', 'at', 'from', 'side', 'extra', 'little', 'bit', 'lot', 'few', 'couple', 'two', 'three', 'four', 'five', 'one', 'half', 'light', 'regular', 'mini', 'double', 'single', 'plain', 'fresh', 'warm', 'cold', 'hot', 'iced', 'sweet', 'spicy', 'leftover', 'leftovers', 'today', 'breakfast', 'lunch', 'dinner', 'snack', 'meal', 'pc', 'pcs', 'oz', 'lb', 'tbsp', 'tsp']);
+function scanFoods(part) {
+  const t = ffNorm(part), toks = t.trim().split(' '), used = new Array(toks.length).fill(false), hits = [];
+  for (const { k, f } of FOOD_KEYS) {
+    const kt = k.split(' ');
+    for (let i = 0; i + kt.length <= toks.length; i++) {
+      if (used.slice(i, i + kt.length).some(Boolean)) continue;
+      const ok = kt.every((w, j) => { const x = toks[i + j]; return x === w || x === w + 's' || x === w + 'es' || (w.endsWith('y') && x === w.slice(0, -1) + 'ies'); });
+      if (!ok) continue;
+      for (let j = 0; j < kt.length; j++) used[i + j] = true;
+      // quantity: nearest number within 3 words before, skipping words like "pieces of"
+      let qty = 1, size = 1;
+      for (let j = i - 1; j >= Math.max(0, i - 4); j--) {
+        const x = toks[j];
+        if (/^\d+(\.\d+)?$/.test(x)) { qty = parseFloat(x); used[j] = true; break; }
+        if (NUMWORDS[x] && x !== 'a') { qty = NUMWORDS[x]; used[j] = true; break; }
+        if (x === 'large' || x === 'big' || x === 'double') size = 1.4;
+        if (x === 'small' || x === 'mini' || x === 'little') size = 0.7;
+        if (!QTY_SKIP.has(x)) break;
+      }
+      hits.push({ i, name: kt.join(' '), f, qty, cal: Math.round(f[1] * qty * size) });
+    }
+  }
+  const unknown = toks.filter((w, i) => !used[i] && !FILLER.has(w) && !/^\d/.test(w) && !NUMWORDS[w] && w.length > 2);
+  return { hits: hits.sort((a, b) => a.i - b.i), unknown };
+}
 function localFoodEstimate(text) {
   const parts = splitFoods(text);
   const items = []; let total = 0, menuHits = 0, ctx = chainIn(ffNorm(text));
+  const unknown = [];
   for (const part of parts) {
     const ff = ffMatchPart(part, ctx);
     if (ff) { ctx = ff.chain; menuHits++; items.push({ name: `${ff.chain.name} ${ff.name}`, short: ff.name.replace(/ \(.*\)$/, ''), chain: ff.chain.name, portion: '', calories: ff.cal }); total += ff.cal; continue; }
-    const m = part.match(/(\d+(?:\.\d+)?)/); const w = part.split(/\s+/).find(x => NUMWORDS[x]);
-    const qty = m ? parseFloat(m[1]) : w ? NUMWORDS[w] : 1;
-    const large = /\b(large|big|double|xl)\b/.test(part) ? 1.4 : /\b(small|mini|little)\b/.test(part) ? 0.7 : 1;
-    const hit = FOODS.find(([keys]) => keys.some(kw => part.includes(kw)));
-    if (hit) { const cal = Math.round(hit[1] * qty * large); items.push({ name: part, calories: cal }); total += cal; }
+    const { hits, unknown: u } = scanFoods(part);
+    for (const h of hits) { items.push({ name: `${h.qty !== 1 ? h.qty + ' × ' : ''}${h.name}`, portion: h.name.includes(h.f[2]) || h.f[2].includes(h.name) ? '' : `per ${h.f[2]}`, calories: h.cal }); total += h.cal; }
+    if (!hits.length) unknown.push(part); else unknown.push(...u.filter(w => !chainIn(` ${w} `)));
   }
   if (!items.length) return null;
   const menuAll = menuHits === parts.length && !(chainIn(ffNorm(text)) && !menuHits);
+  const missed = [...new Set(unknown)].slice(0, 4);
   return {
-    items, total_calories: total, confidence: menuAll ? 'menu' : 'low', menuAll,
+    items, total_calories: total, confidence: menuAll ? 'menu' : 'quick', menuAll, missed,
     title: menuAll ? (new Set(items.map(i => i.chain)).size === 1 ? `${items[0].chain}: ${items.map(i => i.short).join(', ')}` : items.map(i => i.name).join(', ')) : null,
-    note: menuAll ? 'Matched the built-in menu (≈ published values).' : 'Offline rough estimate. Set up AI in Me → Settings for better ones.',
+    note: menuAll ? 'Matched the built-in menu (≈ published values).'
+      : `Quick estimate from Leanline’s food list.${missed.length ? ` Didn’t recognize “${missed.join(', ')}”, so it isn’t counted. Type a total above if that’s off.` : ''}${aiReady() ? '' : ' For photos and restaurant meals, turn on AI in Me → AI estimates.'}`,
   };
 }
 /* ═════════════ AI estimate (via your serverless proxy) ═════════════ */
@@ -472,13 +537,6 @@ function confetti(palette) {
     if (++f < 180) requestAnimationFrame(tick); else ctx.clearRect(0, 0, innerWidth, innerHeight);
   })();
 }
-function ring(pct, colors, size = 196, stroke = 16) {
-  const r = (size - stroke) / 2, C = 2 * Math.PI * r, p = clamp(pct, 0, 1);
-  return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}"><defs><linearGradient id="ringg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${colors[0]}"/><stop offset="1" stop-color="${colors[1]}"/></linearGradient></defs>
-  <circle cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" stroke="rgba(255,255,255,.07)" stroke-width="${stroke}"/>
-  <circle cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" stroke="url(#ringg)" stroke-width="${stroke}" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C * (1 - p)}" style="transition:stroke-dashoffset .8s cubic-bezier(.2,.9,.3,1)"/></svg>`;
-}
-
 /* ═════════════ screens ═════════════ */
 function render() {
   const app = $('#app');
@@ -490,24 +548,6 @@ function render() {
   ({ today: bindToday, ranks: bindRanks, me: bindMe }[tab])?.();
 }
 $$('.tab').forEach(t => t.addEventListener('click', () => { haptic(); tab = t.dataset.tab; if (tab === 'today') viewDay = todayKey(); render(); scrollTo(0, 0); }));
-$('#fab').addEventListener('click', () => { haptic(); addSheet(); });
-
-/** The + button: every way to log something, one tap away. */
-function addSheet() {
-  const w = peekDay(viewDay).weight || latestWeight(viewDay);
-  openSheet(`<h2>Log for ${relDate(viewDay).toLowerCase() === 'today' ? 'today' : relDate(viewDay)}</h2>
-    <div class="add-grid">
-      <label class="add-tile accent"><input type="file" accept="image/*" id="add-photo" hidden><span class="e">📷</span><b>Snap a meal</b><small>AI counts it</small></label>
-      <button class="add-tile" data-go="food"><span class="e">✍️</span><b>Type food</b><small>“2 eggs and toast”</small></button>
-      <button class="add-tile" data-go="ff"><span class="e">🍔</span><b>Fast food</b><small>15 menus</small></button>
-      <button class="add-tile" data-go="workout"><span class="e">💪</span><b>Workout</b><small>Cardio, lifts, sports</small></button>
-      <button class="add-tile wide" data-go="weight"><span class="e">⚖️</span><b>Weigh-in</b><small>Last: ${w} lb</small></button>
-    </div>`, sh => {
-    $('#add-photo', sh).onchange = e => { const f = e.target.files[0]; if (f) foodSheet({ file: f }); };
-    $$('[data-go]', sh).forEach(b => b.onclick = () => { haptic(); ({ food: () => foodSheet(), ff: () => { ffOrder = []; fastFoodSheet(); }, workout: () => exerciseSheet(), weight: weightSheet })[b.dataset.go](); });
-  });
-}
-
 /* ── onboarding ── */
 function profileForm(p = {}) {
   const ft = p.heightIn ? Math.floor(p.heightIn / 12) : '', inch = p.heightIn ? p.heightIn % 12 : '';
@@ -565,8 +605,7 @@ function mealOf(e) {
 function greeting() { const h = new Date().getHours(); return h < 5 ? 'Up late' : h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening'; }
 function todayHTML() {
   const k = viewDay, d = peekDay(k), t = totals(k), tgt = targetFor(k), sc = scoreFor(k), isToday = k === todayKey();
-  const left = tgt - t.net, st = streak(isLogged), pct = t.net / tgt, over = t.net > tgt;
-  const colors = over ? ['#fb7185', '#f43f5e'] : pct > 0.9 ? ['#fde047', '#f59e0b'] : ['#86efac', '#2dd4bf'];
+  const left = tgt - t.net, st = streak(isLogged), ri = rankIndex(st), pct = clamp(t.net / tgt, 0, 1), over = t.net > tgt;
   const coach = isToday ? coachLine() : '';
   const entry = (e, type) => `<div class="entry">
       ${e.photo ? `<img class="thumb" src="${e.photo}" alt="">` : `<div class="thumb">${type === 'food' ? (e.ff ? '🍔' : '🍽️') : (e.emoji || '🏃')}</div>`}
@@ -575,38 +614,54 @@ function todayHTML() {
       <button class="del" data-del="${type}:${e.id}" aria-label="Delete">✕</button></div>`;
   const groups = MEALS.map(([id, em, label]) => ({ id, em, label, items: d.food.filter(e => mealOf(e) === id) })).filter(g => g.items.length);
   const bar = (v, max, c) => `<div class="mini-bar"><i style="width:${v / max * 100}%;background:${c}"></i></div>`;
+  const C = 2 * Math.PI * 26;
   return `
-  <header class="today-head">
-    <div>
-      <div class="eyebrow datenav"><button id="prev" aria-label="Previous day">‹</button><span>${niceDate(k, { weekday: 'long', month: 'short', day: 'numeric' })}</span><button id="next" aria-label="Next day" ${isToday ? 'disabled' : ''}>›</button></div>
-      <h1 class="hello">${isToday ? greeting() : relDate(k)}</h1>
+  <section class="band">
+    <div class="band-top">
+      <div class="datenav"><button id="prev" aria-label="Previous day">‹</button><span>${isToday ? niceDate(k, { weekday: 'long', month: 'short', day: 'numeric' }) : relDate(k)}</span><button id="next" aria-label="Next day" ${isToday ? 'disabled' : ''}>›</button></div>
+      <button class="rank-chip" id="rank-pill" aria-label="Streak rank">${rankBadge(ri, 22)}<span>${ri >= 0 ? RANKS[ri].name : 'Unranked'}</span><b>🔥 ${st}</b></button>
     </div>
-    <button class="streak-pill ${st ? '' : 'cold'}" id="rank-pill" aria-label="Streak rank">${rankBadge(rankIndex(st), 24)}<span>🔥 <span class="num">${st}</span></span></button>
-  </header>
-  <section class="card hero-card">
-    <div class="ring">${ring(pct, colors)}<div class="center"><div class="v num">${fmt(Math.abs(left))}</div><div class="l">${left >= 0 ? 'calories left' : 'calories over'}</div><div class="of">of ${fmt(tgt)}</div></div></div>
-    <div class="hero-stats">
-      <div><span class="k">🍽️ Eaten</span><span class="v num">${fmt(t.eaten)}</span></div>
-      <div><span class="k">🔥 Burned</span><span class="v num burn">${fmt(t.burned)}</span></div>
-      <button id="hero-weight"><span class="k">⚖️ Weight</span><span class="v num">${d.weight || latestWeight(k)}</span></button>
-    </div>
-    <div class="score-row">
-      <div class="grade" style="--g:${scoreColor(sc.total)}"><b class="num">${sc.total}</b><span>${scoreGrade(sc.total)}</span></div>
-      <div class="score-parts">
-        <div><span>Calories</span>${bar(sc.cal, 60, 'var(--accent)')}</div>
-        <div><span>Logging</span>${bar(sc.log, 20, 'var(--blue)')}</div>
-        <div><span>Exercise</span>${bar(sc.ex, 20, 'var(--orange)')}</div>
+    <div class="band-main">
+      <div>
+        <div class="band-label">${isToday ? greeting() : 'Calories'}</div>
+        <div class="band-num num">${fmt(Math.abs(left))}</div>
+        <div class="band-sub">${left >= 0 ? 'calories left' : 'calories over'} · target ${fmt(tgt)}</div>
+      </div>
+      <div class="score-dial" aria-label="Day score ${sc.total}">
+        <svg viewBox="0 0 60 60"><circle cx="30" cy="30" r="26" fill="none" stroke="rgba(255,255,255,.18)" stroke-width="5"/>
+          <circle cx="30" cy="30" r="26" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C * (1 - sc.total / 100)}" transform="rotate(-90 30 30)"/></svg>
+        <div><b class="num">${sc.total}</b><span>${scoreGrade(sc.total)}</span></div>
       </div>
     </div>
-    ${coach ? `<p class="coach">${coach}</p>` : ''}
+    <div class="fuel ${over ? 'over' : ''}"><i style="width:${pct * 100}%"></i></div>
+    <div class="band-stats">
+      <div><span>Eaten</span><b class="num">${fmt(t.eaten)}</b></div>
+      <div><span>Burned</span><b class="num">${fmt(t.burned)}</b></div>
+      <button id="hero-weight"><span>Weight</span><b class="num">${d.weight || latestWeight(k)}</b></button>
+    </div>
+  </section>
+  <nav class="dock" aria-label="Quick log">
+    <button data-q="food"><span class="ic">🍽️</span>Food</button>
+    <button data-q="ff"><span class="ic">🍔</span>Fast food</button>
+    <button data-q="workout"><span class="ic">💪</span>Workout</button>
+    <button data-q="weight"><span class="ic">⚖️</span>Weigh-in</button>
+  </nav>
+  ${coach ? `<p class="coach">${coach}</p>` : ''}
+  <section class="card score-card">
+    <div class="eyebrow">Day score</div>
+    <div class="score-parts">
+      <div><span>Calories</span>${bar(sc.cal, 60, 'rgb(var(--acc))')}<b class="num">${sc.cal}/60</b></div>
+      <div><span>Logging</span>${bar(sc.log, 20, 'var(--blue)')}<b class="num">${sc.log}/20</b></div>
+      <div><span>Exercise</span>${bar(sc.ex, 20, 'var(--orange)')}<b class="num">${sc.ex}/20</b></div>
+    </div>
   </section>
   ${isToday ? inspoCard() : ''}
-  <div class="sec-h"><h2>Meals</h2><button class="link" data-add="food">+ Add</button></div>
+  <div class="sec-h"><h2>Meals</h2><span class="sub num">${fmt(t.eaten)} cal</span></div>
   ${groups.length ? groups.map(g => `<section class="card list-card"><div class="row between group-h"><span>${g.em} ${g.label}</span><span class="num">${fmt(g.items.reduce((a, e) => a + e.cal, 0))} cal</span></div>${g.items.map(e => entry(e, 'food')).join('')}</section>`).join('')
-    : `<button class="card empty-card" data-add="food"><span class="e">🍽️</span><b>Log your first meal</b><small>Snap a photo, type it, or pick fast food</small></button>`}
-  <div class="sec-h"><h2>Workouts</h2><div class="row" style="gap:14px"><button class="link muted" id="wh-link">History</button><button class="link" data-add="exercise">+ Add</button></div></div>
+    : `<button class="card empty-card" data-q="food"><span class="e">🍽️</span><b>Log your first meal</b><small>Snap a photo, type it, or pick fast food</small></button>`}
+  <div class="sec-h"><h2>Workouts</h2><button class="link" id="wh-link">History & PRs</button></div>
   ${d.exercise.length ? `<section class="card list-card">${d.exercise.map(e => entry(e, 'exercise')).join('')}</section>`
-    : `<button class="card empty-card" data-add="exercise"><span class="e">💪</span><b>No workout yet</b><small>Cardio, lifting, sports. It all counts.</small></button>`}`;
+    : `<button class="card empty-card" data-q="workout"><span class="e">💪</span><b>No workout yet</b><small>Cardio, lifting, sports. It all counts.</small></button>`}`;
 }
 function bindToday() {
   $('#prev').onclick = () => { viewDay = addDays(viewDay, -1); render(); };
@@ -614,7 +669,7 @@ function bindToday() {
   $('#wh-link').onclick = workoutHistorySheet;
   $('#hero-weight').onclick = weightSheet;
   $('#rank-pill').onclick = () => { tab = 'ranks'; ranksView = 'rank'; render(); scrollTo(0, 0); };
-  $$('[data-add]').forEach(b => b.onclick = () => { haptic(); ({ food: () => foodSheet(), exercise: () => exerciseSheet(), weight: weightSheet })[b.dataset.add](); });
+  $$('[data-q]').forEach(b => b.onclick = () => { haptic(); ({ food: () => foodSheet(), ff: () => { ffOrder = []; fastFoodSheet(); }, workout: () => exerciseSheet(), weight: weightSheet })[b.dataset.q](); });
   $$('[data-inspo]').forEach(b => b.onclick = () => { S.settings.inspoToday = { k: todayKey(), kind: b.dataset.inspo }; save(); haptic(); render(); });
   const share = $('#inspo-share');
   if (share) share.onclick = async () => {
@@ -675,7 +730,7 @@ function foodSheet(opts = {}) {
     btn.onclick = async () => {
       const text = $('#food-txt', sh).value.trim(), cal = Number($('#food-cal', sh).value);
       if (cal > 0) return addEntry('food', { name: text || 'Food', cal: Math.round(cal), photo: photo?.thumb || null });
-      if (estimate) return addEntry('food', { name: estimate.title || text || 'Meal', cal: estimate.total_calories, note: estimate.confidence === 'menu' ? '🍔 Menu values' : `${estimate.confidence || 'AI'} confidence estimate`, photo: photo?.thumb || null });
+      if (estimate) return addEntry('food', { name: estimate.title || text || 'Meal', cal: estimate.total_calories, note: estimate.confidence === 'menu' ? '🍔 Menu values' : estimate.confidence === 'quick' ? 'Quick estimate' : `AI estimate · ${estimate.confidence || 'medium'} confidence`, photo: photo?.thumb || null });
       if (!text && !photo) return toast('Type what you ate or add a photo');
       const local = text ? localFoodEstimate(text) : null;
       if (local?.menuAll && !photo) estimate = local; // every item is on a built-in menu: instant + offline
@@ -685,7 +740,7 @@ function foodSheet(opts = {}) {
         catch (err) { toast(err.message); estimate = local; }
       } else if (photo && !text) { toast('Add a description too. AI isn’t set up yet.'); return; }
       else estimate = local;
-      if (!estimate) { setBtn('Add'); return toast('Couldn’t guess that. Enter the calories.'); }
+      if (!estimate) { setBtn('Add'); $('#est', sh).innerHTML = `<div class="estimate"><b>Not sure about that one.</b><div class="sub">Type the calories above${aiReady() ? '' : ', or turn on AI in Me → AI estimates so it can figure out anything you type or photograph'}.</div></div>`; $('#food-cal', sh).focus(); return; }
       $('#est', sh).innerHTML = `<div class="estimate"><div class="row between"><span class="sub">Estimated</span><span class="tot">${fmt(estimate.total_calories)} cal</span></div>
         <ul>${(estimate.items || []).map(i => `<li>${esc(i.name)}${i.portion ? ` (${esc(i.portion)})` : ''}: ${fmt(i.calories)}</li>`).join('')}</ul>
         ${estimate.note ? `<div class="sub">${esc(estimate.note)}</div>` : ''}</div>`;
@@ -1120,7 +1175,7 @@ function rankViewHTML() {
   const ri = rankIndex(st), cur = RANKS[ri], next = RANKS[ri + 1], hi = S.records.highestRank;
   const from = cur ? cur.min : 0, pct = next ? clamp((st - from) / (next.min - from), 0, 1) : 1;
   const grad = cur ? `linear-gradient(90deg,${cur.tier.c[1]},${cur.tier.c[0]})` : 'var(--line)';
-  return `<section class="card rank-hero">
+  return `<section class="band rank-hero">
     <div class="rank-emblem">${rankBadge(ri, 104)}</div>
     <div class="eyebrow">Streak rank</div>
     <div class="rank-name">${cur ? cur.name : 'Unranked'}</div>
