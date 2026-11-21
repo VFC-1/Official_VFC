@@ -215,7 +215,10 @@ const FOODS = [
   [['tortilla', 'flour tortilla'], 140, 'tortilla'], [['chips and salsa', 'tortilla chips'], 430, 'basket'], [['queso'], 120, 'quarter cup'], [['salsa', 'pico'], 15, 'serving'],
   [['refried beans', 'beans', 'black beans', 'charro beans'], 220, 'cup'], [['mexican rice', 'spanish rice'], 220, 'cup'], [['sour cream'], 60, '2 tbsp'],
   [['sandwich', 'sub', 'hoagie'], 450, 'sandwich'], [['grilled cheese'], 440, 'sandwich'], [['pbj', 'pb and j', 'peanut butter and jelly'], 380, 'sandwich'],
-  [['beef n cheddar', 'roast beef'], 450, 'sandwich'], [['wrap'], 450, 'wrap'], [['sushi', 'sushi roll', 'roll of sushi'], 300, 'roll'], [['ramen'], 450, 'bowl'], [['pho'], 450, 'bowl'],
+  [['beef n cheddar', 'roast beef'], 450, 'sandwich'], [['wrap'], 450, 'wrap'], [['sushi', 'sushi roll', 'roll of sushi', 'crab roll', 'kani roll'], 300, 'roll'], [['spicy crab roll', 'spicy tuna roll', 'spicy salmon roll', 'spicy roll'], 360, 'roll'],
+  [['california roll'], 260, 'roll'], [['philadelphia roll', 'philly roll'], 320, 'roll'], [['shrimp tempura roll', 'tempura roll', 'crunchy roll', 'dragon roll', 'rainbow roll', 'specialty roll'], 480, 'roll'],
+  [['cucumber roll', 'avocado roll', 'veggie roll'], 160, 'roll'], [['nigiri'], 60, 'piece'], [['sashimi'], 35, 'piece'], [['edamame'], 190, 'cup'], [['miso soup'], 40, 'bowl'],
+  [['poke bowl', 'poke'], 600, 'bowl'], [['teriyaki chicken', 'chicken teriyaki'], 450, 'plate'], [['hibachi', 'hibachi chicken', 'hibachi steak'], 900, 'plate'], [['bento', 'bento box'], 700, 'box'], [['dinner roll'], 100, 'roll'], [['ramen'], 450, 'bowl'], [['pho'], 450, 'bowl'],
   [['fried rice'], 520, 'plate'], [['orange chicken'], 490, 'serving'], [['lo mein', 'chow mein'], 500, 'plate'], [['egg roll'], 200, 'egg roll'], [['dumpling', 'potsticker'], 60, 'dumpling'],
   [['rice', 'white rice', 'brown rice'], 205, 'cup'], [['pasta', 'spaghetti', 'noodles', 'penne', 'fettuccine'], 400, 'plate'], [['spaghetti and meatballs'], 700, 'plate'],
   [['lasagna'], 450, 'piece'], [['mac and cheese', 'mac n cheese', 'macaroni'], 400, 'cup'], [['alfredo'], 900, 'plate'],
@@ -352,6 +355,8 @@ function scanFoods(part) {
       hits.push({ i, name: kt.join(' '), f, qty, cal: Math.round(f[1] * qty * size) });
     }
   }
+  // "from Eatzi's in Plano", "at mom's": place names, not foods
+  for (let i = 0; i < toks.length; i++) if (['from', 'at', 'in'].includes(toks[i])) for (let j = i + 1; j < toks.length && !used[j]; j++) used[j] = true;
   const unknown = toks.filter((w, i) => !used[i] && !FILLER.has(w) && !/^\d/.test(w) && !NUMWORDS[w] && w.length > 2);
   return { hits: hits.sort((a, b) => a.i - b.i), unknown };
 }

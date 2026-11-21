@@ -1,5 +1,5 @@
 // Offline cache for the app shell. Bump VERSION whenever app files change.
-const VERSION = 'leanline-v4';
+const VERSION = 'leanline-v5';
 const SHELL = ['./', 'index.html', 'styles.css', 'fastfood.js', 'inspiration.js', 'app.js', 'manifest.webmanifest',
   'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png'];
 
