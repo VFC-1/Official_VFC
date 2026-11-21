@@ -432,3 +432,13 @@ body[data-tier="diamond"] .band::after{background:linear-gradient(110deg,transpa
 .rank-hero .sub b{color:#fff!important}
 .rank-hero .progressbar{background:rgba(0,0,0,.28)}
 .rank-hero .progressbar i{background:linear-gradient(90deg,rgba(255,255,255,.7),#fff)!important}
+
+/* Peloton import */
+.peloton-btn{display:flex;align-items:center;gap:12px;width:100%;padding:12px 14px;margin:0 0 12px;border-radius:16px;background:var(--card2);border:1px solid var(--line);text-align:left}
+.peloton-btn small{display:block;color:var(--muted);font-size:12px;font-weight:500}
+.peloton-btn .chev{margin-left:auto;color:var(--muted);font-size:22px}
+.pel-logo{width:36px;height:36px;border-radius:10px;background:rgba(var(--acc),.14);border:1px solid rgba(var(--acc),.28);font-size:19px;display:flex;align-items:center;justify-content:center;flex:none}
+.steps{margin:10px 0 14px;padding-left:20px;color:var(--muted);font-size:14px;line-height:1.5}
+.steps b{color:var(--text)}
+label.btn{cursor:pointer}
+.btn.disabled{opacity:.45;pointer-events:none}

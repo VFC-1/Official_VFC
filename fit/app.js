@@ -988,6 +988,7 @@ function exerciseSheet(w = newWorkout()) {
       <div class="field"><label>Duration (min)</label><input class="input" data-f="duration" inputmode="decimal" placeholder="30" value="${esc(w.duration)}"></div>`;
   };
   openSheet(`<div class="row between"><h2>💪 Log workout</h2><button class="link" id="wh-open" type="button">History & PRs ›</button></div>
+    <button class="peloton-btn" id="pel-open" type="button"><span class="pel-logo">🚴</span><span><b>Import from Peloton</b><small>Workout history file or a screenshot</small></span><span class="chev">›</span></button>
     ${tpl.length ? `<div class="row between" style="margin:0 4px 8px"><span class="sub">⭐ Favorites · tap to log</span><button class="link" id="tpl-edit" type="button">Edit</button></div>
       <div class="chips" id="tpl-chips">${tpl.map((t, i) => `<button class="chip" data-tpl="${i}">${esc(t.emoji || '⭐')} ${esc(t.name)}<span class="tpl-x hidden" data-tplx="${i}">✕</span></button>`).join('')}</div>` : ''}
     <div class="seg" style="margin-bottom:12px">${W_TYPES.map(([k, e, l]) => `<button type="button" data-type="${k}" class="${w.type === k ? 'on' : ''}">${e} ${l}</button>`).join('')}</div>
@@ -1017,6 +1018,7 @@ function exerciseSheet(w = newWorkout()) {
     $$('[data-cm]', sh).forEach(b => b.onclick = () => { w.calMode = b.dataset.cm; exerciseSheet(w); });
     $('#w-fav', sh).onclick = e => { fav = !fav; e.currentTarget.classList.toggle('on', fav); e.currentTarget.textContent = fav ? '★ Will save as favorite' : '☆ Save as favorite'; haptic(); };
     $('#wh-open', sh).onclick = workoutHistorySheet;
+    $('#pel-open', sh).onclick = pelotonSheet;
     let editing = false;
     const ed = $('#tpl-edit', sh);
     if (ed) ed.onclick = () => { editing = !editing; ed.textContent = editing ? 'Done' : 'Edit'; $$('.tpl-x', sh).forEach(x => x.classList.toggle('hidden', !editing)); };
@@ -1038,6 +1040,137 @@ function exerciseSheet(w = newWorkout()) {
     refresh();
   });
 }
+/* ═════════════ Peloton import ═════════════
+   Peloton has no public API, so Leanline never asks for your Peloton password.
+   Two ways in: the workout-history CSV Peloton lets you download, or a
+   screenshot of a workout summary read by AI (when AI is set up). */
+function parseCSV(text) {
+  const rows = []; let row = [], cell = '', q = false;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (q) { if (ch === '"') { if (text[i + 1] === '"') { cell += '"'; i++; } else q = false; } else cell += ch; }
+    else if (ch === '"') q = true;
+    else if (ch === ',') { row.push(cell); cell = ''; }
+    else if (ch === '\n' || ch === '\r') { if (ch === '\r' && text[i + 1] === '\n') i++; row.push(cell); rows.push(row); row = []; cell = ''; }
+    else cell += ch;
+  }
+  if (cell || row.length) { row.push(cell); rows.push(row); }
+  return rows.filter(r => r.some(c => c.trim()));
+}
+const PEL_KIND = [ // discipline keyword → [type, activity/sport, emoji]
+  [/run|tread|jog/i, 'cardio', 'Run', '🏃'], [/walk|hik/i, 'cardio', 'Walk', '🚶'], [/cycl|bike|ride/i, 'cardio', 'Bike', '🚴'], [/row/i, 'cardio', 'Row', '🚣'],
+  [/strength|bootcamp|tone/i, 'strength', null, '🏋️'], [/cardio|hiit|shadowbox|boxing|dance/i, 'cardio', 'HIIT', '⚡'], [/yoga|stretch|pilates|barre|meditat/i, 'other', null, '🧘'],
+];
+/** Turn one Peloton workout into a Leanline exercise entry. */
+function pelotonEntry({ discipline = '', title = '', minutes = 0, miles = 0, cal = 0, hr = 0, incline = 0, speed = 0, output = 0, id = '' }) {
+  const kind = PEL_KIND.find(([re]) => re.test(discipline + ' ' + title)) || [null, 'other', null, '🚴'];
+  // A "run" class done at walking speed is still a walk for the math
+  const activity = kind[2] === 'Run' && speed && speed < 4.2 ? 'Walk' : kind[2];
+  const w = { ...newWorkout(), type: kind[1], activity: activity || 'Run', desc: title || discipline || 'Peloton class', duration: minutes ? String(Math.round(minutes)) : '',
+    distance: miles ? String(miles) : '', hr: hr ? String(Math.round(hr)) : '', intensity: 'moderate', calMode: cal ? 'manual' : 'est', cal: cal ? String(Math.round(cal)) : '' };
+  if (w.type === 'strength') w.exercises = [];
+  const est = estimateWorkout(w);
+  const bits = [miles ? `${round(miles, 2)} mi` : '', incline ? `${round(incline, 1)}% incline` : '', speed ? `${round(speed, 1)} mph` : '', output ? `${Math.round(output)} kJ` : '', hr ? `${Math.round(hr)} bpm` : ''].filter(Boolean);
+  return {
+    name: `${title || discipline || 'Peloton class'}${minutes && !/\bmin/i.test(title) ? ` · ${Math.round(minutes)} min` : ''}`,
+    note: `Peloton${bits.length ? ' · ' + bits.join(' · ') : ''}${cal ? '' : ' · ≈ estimated'}`,
+    emoji: kind[3], cal: cal ? Math.round(cal) : est.cal, type: w.type, w, src: 'peloton', extId: id,
+  };
+}
+/** Add Peloton workouts to their own days, skipping ones already imported. */
+function addPelotonWorkouts(list) {
+  const seen = new Set(Object.values(S.days).flatMap(d => d.exercise.filter(e => e.extId).map(e => e.extId)));
+  let added = 0, dup = 0;
+  for (const { k, time, entry } of list) {
+    if (entry.extId && seen.has(entry.extId)) { dup++; continue; }
+    day(k).exercise.push({ id: uid(), time, ...entry }); seen.add(entry.extId); added++;
+  }
+  save(); evaluate(); render();
+  return { added, dup };
+}
+/** Same class → same id, whether it came from the file or a screenshot. */
+const pelId = d => `pel:${keyOf(d)} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+function importPelotonCSV(text) {
+  const rows = parseCSV(text); if (rows.length < 2) throw new Error('That file looks empty');
+  const head = rows[0].map(h => h.toLowerCase());
+  const col = (...keys) => head.findIndex(h => keys.some(k => h.includes(k)));
+  const c = {
+    ts: col('workout timestamp', 'timestamp', 'date'), disc: col('fitness discipline', 'discipline'), type: col('type'), title: col('title'),
+    len: col('length (minutes)', 'length', 'duration'), cal: col('calories'), dist: col('distance'), hr: col('heartrate', 'heart rate'),
+    inc: col('incline'), spd: col('speed'), out: col('total output', 'output'),
+  };
+  if (c.ts < 0 || (c.cal < 0 && c.len < 0)) throw new Error('This doesn’t look like a Peloton workouts file');
+  const num = (r, i) => { const v = i >= 0 ? parseFloat(String(r[i]).replace(/[^\d.]/g, '')) : NaN; return isFinite(v) ? v : 0; };
+  const list = [];
+  for (const r of rows.slice(1)) {
+    const m = String(r[c.ts] || '').match(/(\d{4})-(\d{2})-(\d{2})[ T](\d{1,2}):(\d{2})/) || String(r[c.ts] || '').match(/(\d{1,2})\/(\d{1,2})\/(\d{2,4})\D+(\d{1,2}):(\d{2})/);
+    if (!m) continue;
+    const d = m[1].length === 4 ? new Date(+m[1], +m[2] - 1, +m[3], +m[4], +m[5]) : new Date(+(m[3].length === 2 ? '20' + m[3] : m[3]), +m[1] - 1, +m[2], +m[4], +m[5]);
+    const entry = pelotonEntry({ discipline: r[c.disc] || r[c.type] || '', title: r[c.title] || '', minutes: num(r, c.len), miles: num(r, c.dist), cal: num(r, c.cal),
+      hr: num(r, c.hr), incline: num(r, c.inc), speed: num(r, c.spd), output: num(r, c.out), id: pelId(d) });
+    list.push({ k: keyOf(d), time: d.getTime(), entry });
+  }
+  if (!list.length) throw new Error('No workouts found in that file');
+  return addPelotonWorkouts(list);
+}
+function pelotonSheet() {
+  openSheet(`<div class="row" style="gap:8px;margin-bottom:12px"><button class="icon-btn" id="pel-back" aria-label="Back">‹</button><h2 style="margin:0">Import from Peloton</h2></div>
+    <section class="card">
+      <div class="eyebrow">📄 Workout history file · best for catching up</div>
+      <ol class="steps">
+        <li>In Safari, sign in at <b>members.onepeloton.com</b></li>
+        <li>Open your <b>profile</b> → <b>Workouts</b> → tap <b>Download Workouts</b></li>
+        <li>Come back here and pick the file (it’s in Files → Downloads)</li>
+      </ol>
+      <label class="btn"><input type="file" id="pel-csv" accept=".csv,text/csv" hidden>Choose Peloton file</label>
+      <p class="sub" style="margin:10px 0 0">Each class lands on the day you took it. Importing again only adds new classes.</p>
+    </section>
+    <section class="card">
+      <div class="eyebrow">📸 One workout · from a screenshot</div>
+      <p class="sub">Screenshot the workout summary in the Peloton app, then pick it here.${aiReady() ? '' : ' <b>Needs AI</b> (Me → AI estimates).'}</p>
+      <label class="btn secondary ${aiReady() ? '' : 'disabled'}"><input type="file" id="pel-shot" accept="image/*" hidden ${aiReady() ? '' : 'disabled'}>Choose screenshot</label>
+      <div id="pel-shot-out"></div>
+    </section>
+    <section class="card">
+      <div class="eyebrow">✍️ Or type it in · 20 seconds</div>
+      <div class="grid2">
+        <div class="field"><label>Class</label><input class="input" id="pel-title" placeholder="40 min Run"></div>
+        <div class="field"><label>Minutes</label><input class="input" id="pel-min" inputmode="decimal" placeholder="40"></div>
+        <div class="field"><label>Calories</label><input class="input" id="pel-cal" inputmode="numeric" placeholder="502"></div>
+        <div class="field"><label>Miles · optional</label><input class="input" id="pel-mi" inputmode="decimal" placeholder="2.11"></div>
+      </div>
+      <button class="btn secondary" id="pel-add">Add to ${relDate(viewDay).toLowerCase() === 'today' ? 'today' : relDate(viewDay)}</button>
+    </section>
+    <p class="legal">Leanline never asks for your Peloton password. Peloton is a trademark of Peloton Interactive, Inc.; Leanline isn’t affiliated with Peloton.</p>`, sh => {
+    $('#pel-back', sh).onclick = () => exerciseSheet();
+    $('#pel-csv', sh).onchange = async e => {
+      const f = e.target.files[0]; if (!f) return;
+      try { const r = importPelotonCSV(await f.text()); closeSheet(); toast(`🚴 Imported ${r.added} Peloton workout${r.added === 1 ? '' : 's'}${r.dup ? ` · ${r.dup} already here` : ''}`); }
+      catch (err) { toast(err.message); }
+    };
+    const shot = $('#pel-shot', sh);
+    if (shot) shot.onchange = async e => {
+      const f = e.target.files[0]; if (!f) return;
+      const out = $('#pel-shot-out', sh); out.innerHTML = '<div class="estimate"><span class="spinner" style="border-top-color:currentColor"></span> Reading your workout…</div>';
+      try {
+        const photo = await readPhoto(f);
+        const r = await aiEstimate({ kind: 'exercise', image: photo.ai, text: 'Peloton workout summary screenshot' });
+        const m = String(r.when || '').match(/(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{1,2}):(\d{2}))?/);
+        const d = m ? new Date(+m[1], +m[2] - 1, +m[3], +(m[4] || 12), +(m[5] || 0)) : null;
+        const entry = pelotonEntry({ title: r.title, discipline: r.discipline || r.title, minutes: r.minutes, miles: r.miles, cal: r.calories, hr: r.avg_hr, incline: r.incline, speed: r.speed, output: r.output_kj, id: d && m[4] ? pelId(d) : '' });
+        const res = addPelotonWorkouts([{ k: d ? keyOf(d) : viewDay, time: d ? d.getTime() : Date.now(), entry }]);
+        closeSheet(); toast(res.added ? `🚴 Added ${entry.name} · ${fmt(entry.cal)} cal` : 'That workout is already in Leanline');
+      } catch (err) { out.innerHTML = `<div class="estimate">${esc(err.message)}</div>`; }
+    };
+    $('#pel-add', sh).onclick = () => {
+      const cal = Number($('#pel-cal', sh).value), min = Number($('#pel-min', sh).value);
+      if (!(cal > 0) && !(min > 0)) return toast('Enter at least the calories or minutes');
+      const entry = pelotonEntry({ title: $('#pel-title', sh).value.trim() || 'Peloton class', discipline: $('#pel-title', sh).value, minutes: min, miles: Number($('#pel-mi', sh).value), cal });
+      logWorkout(entry);
+    };
+  });
+}
+
 function workoutHistorySheet() {
   const pr = personalRecords(), list = allWorkouts().reverse(), month = todayKey().slice(0, 7);
   const thisMonth = list.filter(x => x.k.startsWith(month));

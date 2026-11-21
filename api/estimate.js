@@ -44,6 +44,27 @@ const EXERCISE_SCHEMA = {
   additionalProperties: false,
 };
 
+// Reading a workout-summary screenshot (Peloton, Apple Fitness, a gym machine, ...).
+// Numbers not shown on screen come back as 0 / "" and the app fills in the rest.
+const WORKOUT_SHOT_SCHEMA = {
+  type: "object",
+  properties: {
+    title: { type: "string" },
+    discipline: { type: "string" },
+    minutes: { type: "number" },
+    miles: { type: "number" },
+    calories: { type: "integer" },
+    avg_hr: { type: "integer" },
+    incline: { type: "number" },
+    speed: { type: "number" },
+    output_kj: { type: "integer" },
+    when: { type: "string" },
+    note: { type: "string" },
+  },
+  required: ["title", "discipline", "minutes", "miles", "calories", "avg_hr", "incline", "speed", "output_kj", "when", "note"],
+  additionalProperties: false,
+};
+
 function cors(res) {
   res.setHeader("Access-Control-Allow-Origin", process.env.ALLOWED_ORIGIN || "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
@@ -58,7 +79,7 @@ export default async function handler(req, res) {
 
   const passcode = process.env.APP_PASSCODE;
   if (passcode && req.headers["x-app-code"] !== passcode) {
-    return res.status(401).json({ error: "Wrong passcode. Check Settings → AI passcode." });
+    return res.status(401).json({ error: "Wrong passcode. Check Me → AI estimates → Passcode." });
   }
 
   const body = typeof req.body === "string" ? JSON.parse(req.body || "{}") : req.body || {};
@@ -67,15 +88,22 @@ export default async function handler(req, res) {
   const weightLbs = Number(body.weightLbs) || null;
 
   const content = [];
-  if (kind === "food" && body.image && typeof body.image === "string") {
+  if (body.image && typeof body.image === "string") {
     const m = body.image.match(/^data:(image\/(?:jpeg|png|webp|gif));base64,(.+)$/);
     if (!m) return res.status(400).json({ error: "Image must be a base64 data URL" });
     content.push({ type: "image", source: { type: "base64", media_type: m[1], data: m[2] } });
   }
   if (!text && content.length === 0) return res.status(400).json({ error: "Nothing to estimate" });
 
-  const prompt =
-    kind === "food"
+  const workoutShot = kind === "exercise" && content.length > 0;
+  const prompt = workoutShot
+    ? `This is a screenshot of a workout summary (for example from the Peloton app). Read the numbers exactly as shown.
+"title": the class or workout name. "discipline": e.g. Running, Walking, Cycling, Strength, Yoga, Rowing.
+"minutes": duration in minutes (40:38 → 40.6). "miles": distance in miles. "calories": the calories shown.
+"avg_hr": average heart rate if shown. "incline": average incline percent. "speed": average speed in mph. "output_kj": total output in kJ.
+"when": the date and time shown, as YYYY-MM-DD HH:MM in 24-hour time (two-digit years like 11/20/26 mean 2026).
+Use 0 for any number that isn't on screen and "" for text that isn't. "note": one short encouraging sentence.`
+    : kind === "food"
       ? `Estimate the calories in this meal for a weight-loss food log.
 ${text ? `The person describes it as: "${text}"` : "No description was given; rely on the photo."}
 ${content.length ? "Use the photo to judge portion sizes (plate size, utensils, packaging)." : ""}
@@ -96,7 +124,7 @@ Use standard MET values. If no duration is given, assume 30 minutes. Count only 
       fallbacks: "default",
       output_config: {
         effort: "low",
-        format: { type: "json_schema", schema: kind === "food" ? FOOD_SCHEMA : EXERCISE_SCHEMA },
+        format: { type: "json_schema", schema: kind === "food" ? FOOD_SCHEMA : workoutShot ? WORKOUT_SHOT_SCHEMA : EXERCISE_SCHEMA },
       },
       messages: [{ role: "user", content }],
     });
