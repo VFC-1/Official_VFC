@@ -200,12 +200,12 @@ const FOODS = [
   // fruit & veg
   [['banana'], 105, 'banana'], [['apple'], 95, 'apple'], [['orange'], 65, 'orange'], [['grape'], 100, 'cup'], [['berries', 'strawberries', 'blueberries', 'strawberry', 'blueberry'], 70, 'cup'],
   [['watermelon'], 85, 'cup'], [['pineapple'], 80, 'cup'], [['mango'], 200, 'mango'], [['peach'], 60, 'peach'], [['fruit', 'fruit cup'], 80, 'cup'],
-  [['salad', 'side salad'], 200, 'bowl'], [['caesar salad'], 450, 'bowl'], [['broccoli', 'veggies', 'vegetables', 'green beans', 'carrots', 'corn', 'peas', 'spinach'], 60, 'cup'],
+  [['salad', 'side salad'], 200, 'bowl'], [['chicken salad', 'grilled chicken salad', 'salad with chicken'], 450, 'bowl'], [['ranch', 'ranch dressing', 'dressing'], 140, '2 tbsp'], [['caesar salad'], 450, 'bowl'], [['broccoli', 'veggies', 'vegetables', 'green beans', 'carrots', 'corn', 'peas', 'spinach'], 60, 'cup'],
   [['avocado'], 240, 'avocado'], [['guacamole', 'guac'], 230, 'half cup'], [['pickle'], 5, 'pickle'],
   // mains
   [['chicken', 'chicken breast', 'grilled chicken', 'baked chicken'], 280, 'breast'], [['fried chicken'], 400, 'piece'], [['nugget', 'chicken nugget'], 48, 'nugget'],
-  [['wing', 'chicken wing', 'hot wing'], 90, 'wing'], [['tender', 'chicken tender', 'chicken strip'], 130, 'tender'], [['rotisserie chicken'], 450, 'quarter'],
-  [['steak'], 600, 'steak'], [['ribeye'], 750, 'steak'], [['brisket'], 350, 'serving'], [['ribs', 'rib'], 900, 'half rack'], [['pulled pork'], 400, 'serving'],
+  [['wing', 'chicken wing', 'hot wing'], 90, 'wing'], [['tender', 'chicken tender', 'chicken strip', 'chicken finger'], 130, 'tender'], [['rotisserie chicken'], 450, 'quarter'],
+  [['steak'], 600, 'steak'], [['ribeye', 'ribeye steak'], 750, 'steak'], [['sirloin', 'sirloin steak'], 350, '8 oz'], [['filet', 'filet mignon'], 500, '8 oz'], [['t bone', 't bone steak'], 800, 'steak'], [['brisket'], 350, 'serving'], [['ribs', 'rib'], 900, 'half rack'], [['pulled pork'], 400, 'serving'],
   [['pork chop'], 300, 'chop'], [['ham'], 60, 'slice'], [['turkey'], 50, 'slice'], [['meatball'], 75, 'meatball'], [['meatloaf'], 350, 'slice'],
   [['burger', 'hamburger', 'cheeseburger'], 600, 'burger'], [['hot dog', 'corn dog'], 290, 'hot dog'],
   [['salmon'], 360, 'fillet'], [['tuna'], 180, 'can'], [['shrimp'], 120, 'serving'], [['fish', 'tilapia', 'catfish', 'cod'], 250, 'fillet'], [['fish sticks'], 50, 'stick'],
@@ -214,7 +214,7 @@ const FOODS = [
   [['fajita', 'fajitas', 'chicken fajitas', 'beef fajitas', 'fajita chicken', 'fajita beef', 'steak fajitas', 'fajita plate'], 900, 'plate'], [['enchilada'], 330, 'enchilada'], [['tamale'], 285, 'tamale'],
   [['tortilla', 'flour tortilla'], 140, 'tortilla'], [['chips and salsa', 'tortilla chips'], 430, 'basket'], [['queso'], 120, 'quarter cup'], [['salsa', 'pico'], 15, 'serving'],
   [['refried beans', 'beans', 'black beans', 'charro beans'], 220, 'cup'], [['mexican rice', 'spanish rice'], 220, 'cup'], [['sour cream'], 60, '2 tbsp'],
-  [['sandwich', 'sub', 'hoagie'], 450, 'sandwich'], [['grilled cheese'], 440, 'sandwich'], [['pbj', 'pb and j', 'peanut butter and jelly'], 380, 'sandwich'],
+  [['sandwich', 'sub', 'hoagie', 'turkey sandwich', 'ham sandwich', 'club sandwich', 'blt'], 450, 'sandwich'], [['chicken sandwich', 'fried chicken sandwich'], 550, 'sandwich'], [['steak sandwich', 'cheesesteak', 'philly cheesesteak'], 650, 'sandwich'], [['grilled cheese'], 440, 'sandwich'], [['pbj', 'pb and j', 'peanut butter and jelly'], 380, 'sandwich'],
   [['beef n cheddar', 'roast beef'], 450, 'sandwich'], [['wrap'], 450, 'wrap'], [['sushi', 'sushi roll', 'roll of sushi', 'crab roll', 'kani roll'], 300, 'roll'], [['spicy crab roll', 'spicy tuna roll', 'spicy salmon roll', 'spicy roll'], 360, 'roll'],
   [['california roll'], 260, 'roll'], [['philadelphia roll', 'philly roll'], 320, 'roll'], [['shrimp tempura roll', 'tempura roll', 'crunchy roll', 'dragon roll', 'rainbow roll', 'specialty roll'], 480, 'roll'],
   [['cucumber roll', 'avocado roll', 'veggie roll'], 160, 'roll'], [['nigiri'], 60, 'piece'], [['sashimi'], 35, 'piece'], [['edamame'], 190, 'cup'], [['miso soup'], 40, 'bowl'],
@@ -244,13 +244,30 @@ const NUMWORDS = { a: 1, an: 1, one: 1, two: 2, three: 3, four: 4, five: 5, six:
 const ffNorm = t => ` ${String(t).toLowerCase().replace(/&/g, ' and ').replace(/[’'®™.!?]/g, '').replace(/-/g, ' ').replace(/[^a-z0-9"\s]/g, ' ').replace(/\s+/g, ' ').trim()} `;
 const has = (hay, needle) => hay.includes(` ${needle.trim()} `);
 const FF_GENERIC = new Set(['burrito', 'bowl', 'salad', 'taco', 'tacos', 'pizza', 'pasta', 'donut', 'coffee', 'latte', 'cookie', 'chips', 'muffin', 'croissant', 'bagel', 'pepperoni', 'breast', 'thigh', 'leg', 'drumstick', 'wing', 'wings', 'biscuit', 'mac', 'chili', 'baked potato', 'pancakes', 'hotcakes', 'cone', 'lemonade', 'iced coffee', 'chai', 'mocha', 'quesadilla', 'philly', 'teriyaki', 'meatball', 'boneless', 'alfredo', 'garlic bread', 'onion rings', 'tots', 'tater tots', 'slaw', 'coleslaw', 'mashed potatoes', 'egg roll', 'white rice', 'fried rice', 'guac', 'queso', 'minis', 'refresher', 'macchiato', 'shake', 'milkshake', 'tea', 'fries', 'nuggets', 'tenders', 'strips', 'cheeseburger', 'hot dog', 'hash brown', 'hash browns', 'red beans', 'cajun fries', 'apple pie', 'frap', 'chicken sandwich', 'spicy chicken sandwich', 'spicy chicken', 'grilled nuggets', 'cookie', 'iced latte', 'turkey sub', 'tuna sub', 'drip coffee', 'super greens', 'thin crust', 'pan pizza', 'cheese pizza', 'pepperoni pizza', 'bacon egg and cheese', 'sausage egg and cheese', 'chips and cheese', 'teriyaki chicken', 'cobb salad', 'chicken biscuit', 'mac and cheese', 'coke', 'soda', 'pop', 'sprite', 'dr pepper', 'pepsi', 'blast', 'little burger', 'leg', 'strips', 'frosty']);
+// Everyday words that appear on menus but shouldn't pull a whole restaurant in when typed alone.
+const FF_GENERIC_EXTRA = new Set(['fingers', 'finger', 'slider', 'sauce', 'bowl', 'pita', 'sirloin', 'filet', 'strip', 'ranch', 'blue cheese', 'glazed', 'original glazed', 'combo plate', 'taco plate',
+  'enchilada plate', 'swirl', 'pinata', 'cobbler', 'cowboy', 'old fashioned', 'curds', 'cheese curds', 'steakburger', 'freeze', 'rebel', 'hulk', 'the hulk', 'cold brew', 'concrete', 'custard',
+  'concrete mixer', 'the works', '13', 'roll', 'rolls', 'country fried', 'red wine', 'wine', 'margarita', 'frozen margarita', 'street tacos', 'street corn', 'elote', 'fried corn', 'boneless',
+  'classic wings', 'bone in', 'wings', 'seasoned fries', 'crinkle fries', 'curly fries', 'steak fries', 'fry sauce', 'garlic knots', 'garlic sauce', 'crazy bread', 'deep dish', 'personal pan',
+  'breadstick', 'house salad', 'wedge salad', 'creamed spinach', 'lobster mac', 'glazed carrot', 'loaded baked potato', 'mozzarella sticks', 'chicken bites', 'egg rolls', 'avocado egg rolls',
+  'two tenders', 'two sliders', 'tikka', 'shack burger', 'hot n ready', 'kids meal', 'lean brisket', 'jalapeno cheddar sausage', 'stuffed potato', 'hot mess', 'bbq sauce', 'fajita plate',
+  'chips and salsa', 'chips and queso', 'chips and guac', 'buttermilk pancakes', 'smothered and covered', 'breakfast sampler', 'all star', 'roast beef', 'brisket sandwich', 'philly cheesesteak',
+  'cheesecake', 'original cheesecake', 'molten cake', 'skillet queso', 'red velvet', 'red velvet cake', 'key lime pie', 'brown bread', 'zuppa toscana', 'chicken parm', 'fettuccine alfredo',
+  'turkey and provolone', 'texas toast', 'canes sauce', 'daves sauce', 'cream corn', 'green chile queso', 'fried avocado', 'tipsy chick', 'baja taco', 'baja shrimp', 'muchaco', 'party nachos']);
+const FOOD_WORDS = FOODS.flatMap(f => f[0].map(k => ffNorm(k).trim()));
+/** True when a menu alias is (or contains) an everyday food word, e.g. "turkey", "brisket sandwich". */
+function hasFoodWord(alias) {
+  const at = alias.split(' ');
+  const same = (x, w) => x === w || x === w + 's' || x === w + 'es' || w === x + 's' || w === x + 'es';
+  return FOOD_WORDS.some(k => { const kt = k.split(' '); for (let i = 0; i + kt.length <= at.length; i++) if (kt.every((w, j) => same(at[i + j], w))) return true; return false; });
+}
 const FF_INDEX = (() => {
   const count = {};
   FF_CHAINS.forEach(c => new Set(c.items.flatMap(it => it.a.map(a => ffNorm(a).trim()))).forEach(a => { count[a] = (count[a] || 0) + 1; }));
   const global = [];
   FF_CHAINS.forEach(c => c.items.forEach(it => {
     // Only curated, chain-specific aliases match without the restaurant being named.
-    it.a.map(a => ffNorm(a).trim()).forEach(k => { if (!FF_GENERIC.has(k) && count[k] === 1 && k.length > 3) global.push({ k, c, it }); });
+    it.a.map(a => ffNorm(a).trim()).forEach(k => { if (!FF_GENERIC.has(k) && !FF_GENERIC_EXTRA.has(k) && !hasFoodWord(k) && count[k] === 1 && k.length > 3) global.push({ k, c, it }); });
   }));
   global.sort((a, b) => b.k.length - a.k.length);
   return { global };
@@ -290,10 +307,10 @@ function ffMatchPart(part, ctx) {
       for (const k of keys) if (has(t, k)) score = Math.max(score, 10 + k.length);
       if (!score) {
         const toks = ffNorm(it.n.replace(/\(.*?\)/g, '')).trim().split(' ').filter(w => !STOP.has(w) && w.length > 1);
-        const hit = toks.filter(w => has(t, w) || has(t, w.replace(/s$/, ''))).length;
+        const hit = toks.filter(w => has(t, w) || has(t, w + 's') || has(t, w + 'es') || has(t, w.replace(/s$/, ''))).length;
         if (hit) score = hit / toks.length * 5 + hit;
       }
-      if (score && (!best || score > best.score || (score === best.score && it.n.length < best.it.n.length))) best = { score, it, c: chain };
+      if (score && (!best || score > best.score)) best = { score, it, c: chain };
     }
   }
   if (!best || best.score < 2) {
@@ -308,12 +325,19 @@ function ffMatchPart(part, ctx) {
     const pc = t.match(/ (\d+) ?(pc|piece|pieces|ct|count|nuggets|tenders|strips|wings)\b/);
     const labels = it.s.map(x => ffNorm(x[0]).trim());
     let found = -1;
-    if (pc) found = labels.findIndex(l => l.startsWith(pc[1] + ' '));
+    const lb = t.match(/ (\d\/\d|\d+) ?lb\b/);
+    if (lb) found = labels.findIndex(l => l.startsWith(lb[1] + ' lb') || l.startsWith(lb[1].replace('/', ' ') + ' lb'));
+    if (found < 0 && pc) found = labels.findIndex(l => l.startsWith(pc[1] + ' '));
+    if (found < 0) found = labels.findIndex(l => l.length > 2 && !/^\d/.test(l) && has(t, l));
     if (found < 0) for (const [re, opts] of SIZE_WORDS) if (re.test(t)) { found = labels.findIndex(l => opts.includes(l)); if (found >= 0) break; }
     if (found >= 0) sizeIdx = found;
   }
-  const n = t.match(/^ (\d+(?:\.\d+)?)(?! ?(pc|piece|ct|count|oz|inch|"))/), w = t.trim().split(' ').find(x => NUMWORDS[x] && x !== 'a');
-  const qty = n ? parseFloat(n[1]) : w ? NUMWORDS[w] : 1;
+  let lead = t;
+  for (const n of [best.c.name, ...best.c.a].map(x => ffNorm(x).trim()).sort((a, b) => b.length - a.length)) if (has(lead, n)) { lead = lead.replace(` ${n} `, ' '); break; }
+  const first = lead.trim().split(' ')[0];
+  const n = lead.match(/^ (\d+(?:\.\d+)?)(?! ?(pc|piece|ct|count|oz|inch|lb|"|\/))/);
+  const ffNameWords = ffNorm(it.n).trim().split(' ');
+  const qty = n && !ffNameWords.includes(n[1]) ? parseFloat(n[1]) : (NUMWORDS[first] && first !== 'a' && !ffNameWords.includes(first)) ? NUMWORDS[first] : 1;
   const tweaks = [];
   for (const [phrase, keys] of TWEAK_WORDS) {
     if (!has(t, phrase) || (!phrase.startsWith('no ') && has(t, 'no ' + phrase))) continue;
@@ -366,7 +390,7 @@ function localFoodEstimate(text) {
   const unknown = [];
   for (const part of parts) {
     const ff = ffMatchPart(part, ctx);
-    if (ff) { ctx = ff.chain; menuHits++; items.push({ name: `${ff.chain.name} ${ff.name}`, short: ff.name.replace(/ \(.*\)$/, ''), chain: ff.chain.name, portion: '', calories: ff.cal }); total += ff.cal; continue; }
+    if (ff) { ctx = ff.chain; menuHits++; const cn = ff.chain.name.replace(/ \(.*\)$/, ''); items.push({ name: `${cn} ${ff.name}`, short: ff.name.replace(/ \(.*\)$/, ''), chain: cn, portion: '', calories: ff.cal }); total += ff.cal; continue; }
     const { hits, unknown: u } = scanFoods(part);
     for (const h of hits) { items.push({ name: `${h.qty !== 1 ? h.qty + ' × ' : ''}${h.name}`, portion: h.name.includes(h.f[2]) || h.f[2].includes(h.name) ? '' : `per ${h.f[2]}`, calories: h.cal }); total += h.cal; }
     if (!hits.length) unknown.push(part); else unknown.push(...u.filter(w => !chainIn(` ${w} `)));
@@ -507,7 +531,7 @@ let tab = 'today', viewDay = todayKey();
 function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('show'), 2400); }
 function haptic() { try { navigator.vibrate?.(10); } catch { } }
 function openSheet(html, onMount) {
-  const sh = $('#sheet'); sh.innerHTML = `<div class="grabber"></div>${html}`;
+  const sh = $('#sheet'); sh.innerHTML = `<div class="grabber"></div>${html}`; sh.scrollTop = 0;
   sh.classList.add('open'); $('#backdrop').classList.add('open'); onMount?.(sh);
 }
 function closeSheet() { $('#sheet').classList.remove('open'); $('#backdrop').classList.remove('open'); }
@@ -647,7 +671,7 @@ function todayHTML() {
   </section>
   <nav class="dock" aria-label="Quick log">
     <button data-q="food"><span class="ic">🍽️</span>Food</button>
-    <button data-q="ff"><span class="ic">🍔</span>Fast food</button>
+    <button data-q="ff"><span class="ic">🍔</span>Restaurants</button>
     <button data-q="workout"><span class="ic">💪</span>Workout</button>
     <button data-q="weight"><span class="ic">⚖️</span>Weigh-in</button>
   </nav>
@@ -709,7 +733,7 @@ function foodSheet(opts = {}) {
     ${recents.length ? `<div class="sub" style="margin:0 0 8px 4px">Tap to re-add</div><div class="chips">${recents.map((f, i) => `<button class="chip" data-recent="${i}">${esc(f.name.length > 34 ? f.name.slice(0, 32) + '…' : f.name)} <small>${fmt(f.cal)}</small></button>`).join('')}</div>` : ''}
     <div class="grid2" style="margin-bottom:12px">
       <label class="tile-btn" id="photo-drop"><input type="file" accept="image/*" id="photo-in" hidden><span class="e">📷</span><span>Photo</span></label>
-      <button class="tile-btn" id="ff-open" type="button"><span class="e">🍔</span><span>Fast food</span></button>
+      <button class="tile-btn" id="ff-open" type="button"><span class="e">🍔</span><span>Restaurants</span></button>
     </div>
     <div id="photo-preview"></div>
     <div class="field"><label>What did you eat?</label><textarea class="input" id="food-txt" placeholder="e.g. 2 eggs and toast, or Big Mac and large fries"></textarea></div>
@@ -757,18 +781,19 @@ function foodSheet(opts = {}) {
 
 /* ═════════════ fast food order builder ═════════════ */
 let ffOrder = [];
-const FF_CATS = [['main', 'Mains'], ['breakfast', 'Breakfast'], ['side', 'Sides'], ['drink', 'Drinks'], ['dessert', 'Desserts'], ['build', 'Build your own']];
+const FF_CATS = [['combo', 'Combos'], ['main', 'Mains'], ['breakfast', 'Breakfast'], ['side', 'Sides'], ['drink', 'Drinks'], ['dessert', 'Desserts'], ['build', 'Build your own']];
 const ffTotal = () => ffOrder.reduce((a, l) => a + l.cal, 0);
 const chainLogo = (c, size = 44) => `<span class="ff-logo" style="width:${size}px;height:${size}px;background:${c.bg};color:${c.fg};font-size:${Math.round(size * 0.5)}px">${c.e}</span>`;
 function fastFoodSheet(view = { chain: null, q: '' }) {
   const chain = view.chain && FF_CHAINS.find(c => c.id === view.chain);
   openSheet(`<div class="row" style="gap:8px;margin-bottom:12px">
       <button class="icon-btn" id="ff-back" aria-label="Back">‹</button>
-      ${chain ? `${chainLogo(chain, 34)}<h2 style="margin:0">${esc(chain.name)}</h2>` : '<h2 style="margin:0">🍔 Fast food</h2>'}</div>
-    ${chain ? '' : `<input class="input" id="ff-q" type="search" placeholder="Search restaurants or items" value="${esc(view.q)}" autocomplete="off" style="margin-bottom:12px">`}
+      ${chain ? `${chainLogo(chain, 34)}<h2 style="margin:0;font-size:19px">${esc(chain.name)}</h2>` : '<h2 style="margin:0">🍔 Restaurants</h2>'}</div>
+    ${chain?.est ? '<p class="ff-est">This spot doesn’t publish nutrition info, so these are typical-portion estimates.</p>' : ''}
+    ${chain ? '' : `<input class="input" id="ff-q" type="search" placeholder="Search ${FF_CHAINS.length} restaurants or menu items" value="${esc(view.q)}" autocomplete="off" style="margin-bottom:12px">`}
     <div id="ff-body"></div>
     <div class="field" style="margin-top:14px"><label>Not on the menu? Type it</label>
-      <div class="row"><input class="input" id="ff-custom" placeholder="${chain ? `e.g. ${esc(chain.name)} seasonal special` : 'e.g. Arby’s beef n cheddar'}"><button class="btn secondary" id="ff-custom-go" style="width:auto;padding:0 16px">Add</button></div></div>
+      <div class="row"><input class="input" id="ff-custom" placeholder="${chain ? `e.g. ${esc(chain.name.replace(/ \(.*\)$/, ''))} special` : 'e.g. Arby’s beef n cheddar'}"><button class="btn secondary" id="ff-custom-go" style="width:auto;padding:0 16px">Add</button></div></div>
     <div id="ff-tray"></div>`, sh => {
     const body = $('#ff-body', sh);
     let open = null; // "chainId:itemIdx" currently expanded
@@ -791,7 +816,7 @@ function fastFoodSheet(view = { chain: null, q: '' }) {
         const chains = FF_CHAINS.filter(c => !q || ffNorm(c.name + ' ' + c.a.join(' ')).includes(q));
         const items = q.length >= 2 ? FF_CHAINS.flatMap(c => c.items.map((it, i) => ({ c, i, it }))).filter(x => ffNorm(x.it.n + ' ' + x.it.a.join(' ')).includes(q)).slice(0, 25) : [];
         body.innerHTML = `${!q && recent.length ? `<div class="ff-cat">Recent orders · tap to log</div><div class="chips">${recent.map((o, i) => `<button class="chip" data-reorder="${i}">${esc(o.name.length > 38 ? o.name.slice(0, 36) + '…' : o.name)} <small>${fmt(o.cal)}</small></button>`).join('')}</div>` : ''}
-          ${chains.length ? `<div class="ff-grid">${chains.map(c => `<button class="ff-chain" data-chain="${c.id}">${chainLogo(c)}<span>${esc(c.name)}</span></button>`).join('')}</div>` : ''}
+          ${chains.length ? FF_GROUPS.map(([g, label]) => { const cs = chains.filter(c => c.g === g); return cs.length ? `<div class="ff-cat">${label}</div><div class="ff-grid">${cs.map(c => `<button class="ff-chain" data-chain="${c.id}">${chainLogo(c)}<span>${esc(c.name.replace(/ \(.*\)$/, ''))}</span>${c.est ? '<em>est.</em>' : ''}</button>`).join('')}</div>` : ''; }).join('') : ''}
           ${items.length ? `<div class="ff-cat">Menu items</div>${items.map(x => itemRow(x.c, x.i, true)).join('')}` : ''}
           ${q && !chains.length && !items.length ? '<div class="empty">No match. Type it below and we’ll estimate it.</div>' : ''}`;
       }

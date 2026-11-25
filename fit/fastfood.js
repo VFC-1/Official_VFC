@@ -302,3 +302,290 @@ const FF_CHAINS = [
     SODA(150, 220, 320, 'Dr Pepper'),
   ] },
 ];
+
+/* ═══════════════════════════════════════════════════════════
+   More restaurants: national chains + Dallas–Fort Worth favorites.
+   est: true = the spot doesn't publish nutrition; numbers are typical
+   portion estimates. Everything here is approximate.
+═══════════════════════════════════════════════════════════ */
+const KIDS_REG_LG = (k, r, l) => [['Kids', k], ['Regular', r], ['Large', l]];
+const REG_LG = (r, l) => [['Regular', r], ['Large', l]];
+FF_CHAINS.push(
+  // ── chicken ──
+  { id: 'canes', name: "Raising Cane's", e: '🐔', bg: '#3a1508', fg: '#ff8a5c', g: 'chicken', a: ['raising canes', 'canes', 'cane s'], items: [
+    I('Box Combo', 1360, 'combo', [], ['box combo']),
+    I('3 Finger Combo', 1120, 'combo', [], ['3 finger combo', 'three finger combo']),
+    I('Caniac Combo', 1810, 'combo', [], ['caniac']),
+    I('Sandwich Combo', 1260, 'combo', [], ['canes sandwich combo']),
+    Z('Chicken Fingers', [['1', 130], ['3', 390], ['4', 520], ['6', 780]], 'main', [], ['chicken fingers', 'fingers', 'finger']),
+    I("Cane's Sandwich", 690, 'main', ['noSauce'], ['canes sandwich']),
+    Z('Crinkle-Cut Fries', REG_LG(390, 590), 'side', [], ['crinkle fries', 'fries']),
+    I('Texas Toast', 150, 'side', [], ['texas toast', 'toast']),
+    I('Coleslaw', 110, 'side', [], ['coleslaw', 'slaw']),
+    I("Cane's Sauce", 190, 'side', [], ['canes sauce', 'sauce']),
+    Z('Sweet Tea', KIDS_REG_LG(140, 210, 310), 'drink', ['unsweet'], ['tea']),
+    Z('Lemonade', KIDS_REG_LG(150, 220, 330), 'drink', [], ['lemonade']),
+    Z('Coke', KIDS_REG_LG(140, 250, 370), 'drink', ['diet'], ['coke', 'soda']),
+  ] },
+  { id: 'wingstop', name: 'Wingstop', e: '🍗', bg: '#0f2a1a', fg: '#5fd98a', g: 'chicken', a: ['wingstop', 'wing stop'], items: [
+    Z('Classic Wings (sauced)', [['6 pc', 540], ['8 pc', 720], ['10 pc', 900], ['15 pc', 1350]], 'main', [], ['classic wings', 'bone in', 'wings']),
+    Z('Boneless Wings (sauced)', [['6 pc', 450], ['8 pc', 600], ['10 pc', 750], ['15 pc', 1125]], 'main', [], ['boneless']),
+    Z('Crispy Tenders', [['3 pc', 400], ['4 pc', 530], ['6 pc', 800]], 'main', [], ['tenders']),
+    I('Chicken Sandwich', 680, 'main', [], ['chicken sandwich']),
+    Z('Seasoned Fries', REG_LG(420, 840), 'side', [], ['seasoned fries', 'fries', 'cajun fries']),
+    Z('Cajun Fried Corn', REG_LG(210, 420), 'side', [], ['fried corn']),
+    I('Ranch Dip', 310, 'side', [], ['ranch']),
+    I('Blue Cheese Dip', 300, 'side', [], ['blue cheese']),
+    I('Veggie Sticks', 25, 'side'),
+    SODA(150, 220, 320),
+  ] },
+  { id: 'daves', name: "Dave's Hot Chicken", e: '🌶️', bg: '#3a0a0a', fg: '#ff6b5c', g: 'chicken', a: ['daves hot chicken', 'daves'], items: [
+    I('#1 Two Sliders w/ Fries', 1650, 'combo', [], ['two sliders']),
+    I('#2 One Slider + One Tender w/ Fries', 1360, 'combo', [], ['slider and tender']),
+    I('#3 Two Tenders w/ Fries', 1080, 'combo', [], ['two tenders']),
+    I('Slider', 630, 'main', ['noSauce'], ['slider']),
+    I('Tender', 350, 'main', [], ['tender']),
+    Z('Fries', [['Regular', 380], ['Cheese fries', 680]], 'side', [], ['fries']),
+    I('Mac & Cheese', 350, 'side', [], ['mac']),
+    I('Kale Slaw', 170, 'side', [], ['slaw']),
+    I("Dave's Sauce", 170, 'side', [], ['daves sauce']),
+    SODA(150, 220, 320),
+  ] },
+  { id: 'kfc', name: 'KFC', e: '🪣', bg: '#3a0d10', fg: '#ff6b7a', g: 'chicken', a: ['kfc', 'kentucky fried chicken'], items: [
+    I('Original Recipe Breast', 390, 'main', [], ['kfc breast']), I('Original Recipe Thigh', 280, 'main'), I('Original Recipe Drumstick', 130, 'main', [], ['drumstick']), I('Original Recipe Wing', 130, 'main'),
+    I('Extra Crispy Breast', 530, 'main'), I('Famous Bowl', 740, 'main', [], ['famous bowl']), I('Chicken Sandwich', 650, 'main', ['noMayo']), I('Pot Pie', 720, 'main', [], ['pot pie']),
+    Z('Tenders', [['3 pc', 410], ['5 pc', 680]], 'main', [], ['tenders']),
+    Z('Mashed Potatoes & Gravy', [['Individual', 130], ['Large', 520]], 'side', [], ['mashed potatoes']), I('Biscuit', 180, 'side', [], ['biscuit']),
+    Z('Mac & Cheese', [['Individual', 170], ['Large', 680]], 'side', [], ['mac']), Z('Secret Recipe Fries', [['Individual', 320], ['Large', 470]], 'side', [], ['fries']),
+    I('Coleslaw', 170, 'side', [], ['coleslaw']), SODA(150, 220, 320, 'Pepsi'),
+  ] },
+  // ── burgers ──
+  { id: 'innout', name: 'In-N-Out', e: '🌴', bg: '#3a0a0e', fg: '#ff6b78', g: 'burgers', a: ['in n out', 'innout', 'in and out'], items: [
+    I('Double-Double', 610, 'main', ['noSauce', 'noBun'], ['double double']), I('Cheeseburger', 430, 'main', ['noSauce', 'noBun'], ['cheeseburger']),
+    I('Hamburger', 360, 'main', ['noSauce', 'noBun'], ['hamburger']), I('Double-Double Animal Style', 690, 'main', [], ['animal style burger']),
+    I('3x3', 860, 'main', [], ['3x3']), I('Protein Style Double-Double', 520, 'main', [], ['protein style']),
+    I('French Fries', 360, 'side', [], ['fries']), I('Animal Style Fries', 750, 'side', [], ['animal style fries', 'animal fries']),
+    I('Shake (15 oz)', 590, 'dessert', [], ['shake']), SODA(150, 220, 300),
+  ] },
+  { id: 'shakeshack', name: 'Shake Shack', e: '🍔', bg: '#14280f', fg: '#8be06a', g: 'burgers', a: ['shake shack'], items: [
+    Z('ShackBurger', [['Single', 500], ['Double', 760]], 'main', ['noSauce', 'noBun'], ['shackburger', 'shack burger']), I('SmokeShack', 570, 'main', [], ['smokeshack']),
+    I('Chicken Shack', 550, 'main', [], ['chicken shack']), I("Shroom Burger", 520, 'main'), I('Hot Dog', 370, 'main', [], ['hot dog']),
+    I('Fries', 470, 'side', [], ['fries']), I('Cheese Fries', 710, 'side', [], ['cheese fries']), I('Chicken Bites (6)', 300, 'side', [], ['chicken bites']),
+    I('Shake (chocolate)', 750, 'dessert', [], ['shake']), I('Lemonade', 110, 'drink'),
+  ] },
+  { id: 'freddys', name: "Freddy's", e: '🍔', bg: '#2a1a08', fg: '#ffb35c', g: 'burgers', a: ['freddys', 'freddy s'], items: [
+    I('Original Double Steakburger', 680, 'main', ['noCheese2'], ['steakburger']), I('Single Steakburger', 420, 'main'), I('Patty Melt', 830, 'main'),
+    I('Chicken Tenders (4)', 560, 'main', [], ['tenders']), Z('Shoestring Fries', [['Small', 250], ['Medium', 400], ['Large', 560]], 'side', [], ['fries']),
+    I('Freddy’s Fry Sauce', 170, 'side', [], ['fry sauce']), Z('Custard Concrete', [['Mini', 450], ['Single', 900]], 'dessert', [], ['concrete', 'custard']),
+  ] },
+  { id: 'culvers', name: "Culver's", e: '🧈', bg: '#0a1f3a', fg: '#6aa8ff', g: 'burgers', a: ['culvers'], items: [
+    Z('ButterBurger Cheese', [['Single', 470], ['Double', 700], ['Triple', 930]], 'main', ['noCheese'], ['butterburger']),
+    I('Crispy Chicken Sandwich', 700, 'main'), I('Cod Sandwich', 590, 'main'), Z('Cheese Curds', [['Regular', 510], ['Large', 850]], 'side', [], ['cheese curds', 'curds']),
+    Z('Crinkle Fries', [['Small', 220], ['Regular', 340], ['Large', 440]], 'side', [], ['fries']), Z('Concrete Mixer', [['Short', 600], ['Medium', 900], ['Large', 1200]], 'dessert', [], ['concrete mixer']),
+  ] },
+  { id: 'jitb', name: 'Jack in the Box', e: '🎪', bg: '#3a0d10', fg: '#ff7a85', g: 'burgers', a: ['jack in the box', 'jitb', 'jack n the box'], items: [
+    I('Jumbo Jack', 600, 'main', ['noMayo', 'addCheese'], ['jumbo jack']), I('Sourdough Jack', 710, 'main', ['noMayo'], ['sourdough jack']),
+    I('Ultimate Cheeseburger', 930, 'main'), I('Spicy Chicken', 590, 'main', ['noMayo']), Z('Tacos', [['2', 340], ['4', 680]], 'main', [], ['jack tacos', 'tacos']),
+    Z('Egg Rolls', [['3', 380], ['6', 760]], 'side', [], ['egg rolls']), Z('Curly Fries', SML(280, 450, 570), 'side', [], ['curly fries']),
+    Z('Fries', SML(280, 360, 480), 'side', [], ['fries']), I('Breakfast Jack', 350, 'breakfast'), SODA(150, 220, 320),
+  ] },
+  { id: 'arbys', name: "Arby's", e: '🤠', bg: '#3a0a0a', fg: '#ff6b6b', g: 'burgers', a: ['arbys'], items: [
+    I('Classic Roast Beef', 360, 'main', [], ['roast beef']), I("Classic Beef 'n Cheddar", 450, 'main', [], ['beef n cheddar', 'beef and cheddar']),
+    I('Smokehouse Brisket', 600, 'main', [], ['brisket sandwich']), I('Gyro (roast beef)', 540, 'main'), I('Crispy Chicken Sandwich', 500, 'main'),
+    Z('Curly Fries', SML(410, 550, 650), 'side', [], ['curly fries']), I('Mozzarella Sticks (4)', 440, 'side'), Z('Jamocha Shake', SML(520, 690, 840), 'dessert', [], ['jamocha']),
+  ] },
+  { id: 'dq', name: 'Dairy Queen', e: '🍦', bg: '#3a0a12', fg: '#ff7a8a', g: 'burgers', a: ['dairy queen', 'dq'], items: [
+    I('Dude (chicken fried steak)', 900, 'main', [], ['the dude', 'dude']), I('Hungr-Buster', 560, 'main', [], ['hungr buster', 'hunger buster']),
+    I('Bacon Two Cheese Deluxe', 790, 'main'), Z('Chicken Strip Basket', [['4 pc', 1000], ['6 pc', 1260]], 'combo', [], ['strip basket']),
+    I('Chili Cheese Dog', 380, 'main'), Z('Fries', SML(280, 360, 440), 'side', [], ['fries']),
+    Z('Oreo Blizzard', [['Mini', 440], ['Small', 610], ['Medium', 760], ['Large', 1020]], 'dessert', [], ['blizzard']),
+    I('Dilly Bar', 240, 'dessert', [], ['dilly bar']), Z('Dipped Cone', SML(340, 500, 710), 'dessert', [], ['dipped cone']), Z('Vanilla Cone', SML(230, 330, 480), 'dessert'),
+  ] },
+  // ── tacos & Tex-Mex ──
+  { id: 'torchys', name: "Torchy's Tacos", e: '😈', bg: '#2a2005', fg: '#ffd24a', g: 'texmex', a: ['torchys', 'torchy s'], items: [
+    I('Trailer Park (trashy)', 590, 'main', [], ['trailer park']), I('Democrat', 400, 'main', [], ['democrat']), I('Republican', 380, 'main', [], ['republican']),
+    I('Brushfire', 370, 'main', [], ['brushfire']), I('Baja Shrimp', 380, 'main', [], ['baja shrimp']), I('Mr. Orange', 340, 'main', [], ['mr orange']),
+    I('Dirty Sanchez', 430, 'main', [], ['dirty sanchez']), I('Tipsy Chick', 470, 'main', [], ['tipsy chick']), I('Crossroads', 400, 'main', [], ['crossroads']),
+    I('Fried Avocado', 450, 'main', [], ['fried avocado']), I('Monk’s Revenge (breakfast)', 450, 'breakfast'),
+    Z('Green Chile Queso w/ Chips', [['Cup', 790], ['Bowl', 1400]], 'side', [], ['green chile queso', 'queso']), I('Chips & Salsa', 560, 'side', [], ['chips and salsa']),
+    I('Street Corn', 310, 'side', [], ['street corn']), I('Key Lime Pie', 520, 'dessert', [], ['key lime pie']),
+  ] },
+  { id: 'velvet', name: 'Velvet Taco', e: '🌮', bg: '#2a0a24', fg: '#ff6bd6', g: 'texmex', a: ['velvet taco'], items: [
+    I('Spicy Tikka Chicken', 470, 'main', [], ['tikka chicken', 'tikka']), I('Nashville Hot Tofu', 430, 'main'), I('Picnic Fried Chicken', 420, 'main', [], ['picnic chicken']),
+    I('Cuban Pig', 470, 'main', [], ['cuban pig']), I('Kobe Bacon Burger Taco', 520, 'main', [], ['burger taco']), I('Shrimp & Grits Taco', 420, 'main'),
+    I('Fish N Chips Taco', 470, 'main'), I('Brisket Taco', 480, 'main'), I('Elote', 360, 'side', [], ['elote']), I('Queso & Chips', 720, 'side', [], ['queso']),
+    I('Red Velvet Cake', 750, 'dessert', [], ['red velvet cake', 'red velvet']),
+  ] },
+  { id: 'fuzzys', name: "Fuzzy's Taco Shop", e: '🌮', bg: '#2a1a05', fg: '#ffb84a', g: 'texmex', a: ['fuzzys', 'fuzzy s'], items: [
+    Z('Baja Taco', [['1', 260], ['2', 520], ['3', 780]], 'main', [], ['baja taco']), I('Fuzzy’s Burrito', 800, 'main', [], ['fuzzys burrito']),
+    I('Nachos (chicken)', 1100, 'main', [], ['nachos']), I('Quesadilla (chicken)', 820, 'main'), I('Breakfast Taco', 330, 'breakfast'),
+    I('Chips & Queso', 760, 'side', [], ['queso']), I('Chips & Salsa', 520, 'side'), I('Margarita (rocks)', 300, 'drink'),
+  ] },
+  { id: 'tacocabana', name: 'Taco Cabana', e: '🌵', bg: '#2a0a1a', fg: '#ff7ab8', g: 'texmex', a: ['taco cabana', 'tc'], items: [
+    I('Chicken Fajita Plate', 1050, 'main', [], ['fajita plate']), I('Beef Fajita Plate', 1150, 'main'), Z('Street Tacos (chicken)', [['1', 140], ['3', 420]], 'main', [], ['street tacos']),
+    I('Flautas Plate', 880, 'main', [], ['flautas']), I('Bean & Cheese Taco', 330, 'breakfast', [], ['bean and cheese taco']), I('Bacon, Egg & Cheese Taco', 340, 'breakfast'),
+    I('Potato, Egg & Cheese Taco', 340, 'breakfast'), I('Chips & Queso', 640, 'side', [], ['queso']), I('Frozen Margarita', 350, 'drink', [], ['frozen margarita']),
+  ] },
+  { id: 'tacobueno', name: 'Taco Bueno', e: '🌯', bg: '#0a2a1a', fg: '#5fd9a0', g: 'texmex', a: ['taco bueno'], items: [
+    I('Muchaco (beef)', 410, 'main', [], ['muchaco']), I('Chicken Burrito', 520, 'main'), I('Party Nachos', 1300, 'main', [], ['party nachos']),
+    I('Crispy Taco', 180, 'main'), I('Chips & Queso', 480, 'side', [], ['queso']), I('Cinnamon Twists', 160, 'dessert'),
+  ] },
+  { id: 'texmex', name: 'Tex-Mex spots (Mi Cocina, Uncle Julio’s, Chuy’s…)', e: '🇲🇽', bg: '#2a1406', fg: '#ff9a4d', g: 'texmex', est: true,
+    a: ['mi cocina', 'uncle julios', 'chuys', 'el fenix', 'glorias', 'mesero', 'abuelos', 'on the border', 'el chico', 'pappasitos', 'tex mex', 'mexican restaurant', 'gloria s'], items: [
+    I('Fajitas, chicken (plate w/ tortillas & sides)', 1300, 'main', ['noSourCream', 'addGuac'], ['chicken fajitas', 'fajitas', 'fajita']),
+    I('Fajitas, steak (plate w/ tortillas & sides)', 1450, 'main', ['noSourCream', 'addGuac'], ['steak fajitas', 'beef fajitas']),
+    I('Enchilada Plate (2 + rice & beans)', 1100, 'main', [], ['enchiladas', 'enchilada plate']), I('Taco Plate (3 + rice & beans)', 1050, 'main', [], ['taco plate']),
+    I('Combo Plate', 1250, 'main', [], ['combo plate']), I('Chimichanga', 1000, 'main', [], ['chimichanga']), I('Burrito (smothered)', 1100, 'main', [], ['burrito']),
+    I('Tamales (2)', 570, 'main', [], ['tamales']), I('Chips & Salsa (basket)', 600, 'side', [], ['chips and salsa', 'chips']), Z('Queso', [['Cup', 400], ['Bowl', 800]], 'side', [], ['queso']),
+    I('Guacamole', 300, 'side', [], ['guac', 'guacamole']), I('Mexican Rice', 220, 'side'), I('Refried Beans', 230, 'side'),
+    I('Mambo Taxi / swirl margarita', 450, 'drink', [], ['mambo taxi', 'swirl']), I('Margarita (rocks)', 300, 'drink', [], ['margarita']),
+    I('Chocolate Piñata (shared)', 1200, 'dessert', [], ['pinata']), I('Sopapillas', 450, 'dessert', [], ['sopapillas']),
+  ] },
+  // ── BBQ ──
+  { id: 'bbq', name: 'Texas BBQ joints (Pecan Lodge, Terry Black’s, Hutchins…)', e: '🔥', bg: '#2a0f05', fg: '#ff8a4d', g: 'bbq', est: true,
+    a: ['pecan lodge', 'terry blacks', 'hutchins', 'cattleack', 'lockhart', 'heim', 'goldee s', 'goldees', 'smokey johns', 'bbq', 'barbecue', 'bbq joint', 'texas bbq'], items: [
+    Z('Brisket (fatty/moist)', [['1/4 lb', 330], ['1/2 lb', 660], ['1 lb', 1320]], 'main', [], ['brisket']),
+    Z('Brisket (lean)', [['1/4 lb', 240], ['1/2 lb', 480], ['1 lb', 960]], 'main', [], ['lean brisket']),
+    I('Pork Rib (each)', 220, 'main', [], ['pork rib', 'ribs']), I('Beef Rib (one bone)', 1100, 'main', [], ['beef rib']),
+    I('Sausage Link', 400, 'main', [], ['sausage', 'jalapeno cheddar sausage']), Z('Pulled Pork', [['1/4 lb', 280], ['1/2 lb', 560]], 'main', [], ['pulled pork']),
+    Z('Turkey', [['1/4 lb', 150], ['1/2 lb', 300]], 'main', [], ['turkey']), I('Chopped Brisket Sandwich', 620, 'main', [], ['brisket sandwich']),
+    I('Hot Mess (stuffed potato)', 1200, 'main', [], ['hot mess', 'stuffed potato']),
+    I('Mac & Cheese', 400, 'side', [], ['mac and cheese', 'mac']), I('Potato Salad', 300, 'side', [], ['potato salad']), I('Coleslaw', 200, 'side', [], ['coleslaw']),
+    I('Pinto Beans', 200, 'side', [], ['beans']), I('Collard Greens', 150, 'side'), I('Cornbread', 260, 'side', [], ['cornbread']), I('White Bread (2 slices)', 140, 'side'),
+    I('BBQ Sauce (2 oz)', 100, 'side', [], ['bbq sauce']), I('Banana Pudding', 450, 'dessert', [], ['banana pudding']), I('Peach Cobbler', 480, 'dessert', [], ['cobbler']),
+    I('Sweet Tea', 200, 'drink', ['unsweet'], ['sweet tea']),
+  ] },
+  { id: 'dickeys', name: "Dickey's Barbecue Pit", e: '🍖', bg: '#2a1205', fg: '#ff9a5c', g: 'bbq', a: ['dickeys'], items: [
+    I('Brisket Plate (2 sides + roll)', 1100, 'main', [], ['brisket plate']), I('Pulled Pork Sandwich', 500, 'main', [], ['pulled pork sandwich']),
+    I('Westerner Sandwich', 900, 'main'), I('Brisket Sandwich', 560, 'main'), I('Mac & Cheese', 300, 'side', [], ['mac']), I('Fried Onion Tanglers', 450, 'side'),
+    I('Roll w/ butter', 200, 'side', [], ['roll']), I('Big Yellow Cup sweet tea', 260, 'drink', ['unsweet']),
+  ] },
+  { id: 'babes', name: "Babe's Chicken Dinner House", e: '🍗', bg: '#2a1a08', fg: '#ffbf66', g: 'bbq', est: true, a: ['babes', 'babe s', 'babes chicken'], items: [
+    I('Fried Chicken (per person, 3 pieces)', 900, 'main', [], ['fried chicken']), I('Chicken Fried Steak', 1000, 'main', [], ['chicken fried steak']),
+    I('Fried Catfish', 750, 'main', [], ['catfish']), I('Biscuit', 250, 'side', [], ['biscuit']), I('Mashed Potatoes & Gravy', 320, 'side', [], ['mashed potatoes']),
+    I('Cream Corn', 260, 'side', [], ['cream corn']), I('Green Beans', 120, 'side', [], ['green beans']), I('House Salad', 200, 'side', [], ['salad']),
+    I('Banana Pudding', 450, 'dessert', [], ['banana pudding']),
+  ] },
+  // ── pizza ──
+  { id: 'pizzahut', name: 'Pizza Hut', e: '🍕', bg: '#3a0a0a', fg: '#ff6b6b', g: 'pizza', a: ['pizza hut'], items: [
+    I('Pan Pizza, Pepperoni (slice, large)', 360, 'main', [], ['pan pizza', 'pepperoni']), I('Pan Pizza, Cheese (slice, large)', 330, 'main', [], ['cheese pizza']),
+    I('Hand-Tossed Pepperoni (slice, large)', 300, 'main'), I('Thin ’N Crispy Pepperoni (slice, large)', 230, 'main', [], ['thin crust']),
+    I('Personal Pan Pepperoni (whole)', 700, 'main', [], ['personal pan']), Z('Traditional Wings', [['6 pc', 480], ['8 pc', 640]], 'main', [], ['wings']),
+    I('Breadstick', 140, 'side', [], ['breadstick']), I('Cinnabon Mini Rolls (10)', 830, 'dessert'),
+  ] },
+  { id: 'papajohns', name: "Papa John's", e: '🍕', bg: '#0f2a14', fg: '#6ade80', g: 'pizza', a: ['papa johns'], items: [
+    I('Pepperoni (slice, large original)', 330, 'main', [], ['pepperoni']), I('Cheese (slice, large original)', 300, 'main', [], ['cheese pizza']),
+    I('The Works (slice, large)', 360, 'main', [], ['the works']), I('Thin Crust Pepperoni (slice, large)', 270, 'main', [], ['thin crust']),
+    I('Garlic Knots (each)', 70, 'side', [], ['garlic knots']), I('Garlic Sauce cup', 150, 'side', [], ['garlic sauce']), I('Papadia (Italian)', 1000, 'main'),
+  ] },
+  { id: 'littlec', name: 'Little Caesars', e: '🍕', bg: '#2a1a05', fg: '#ff9a3d', g: 'pizza', a: ['little caesars', 'little caesar'], items: [
+    I('Classic Pepperoni (slice)', 280, 'main', [], ['pepperoni', 'hot n ready']), I('Classic Cheese (slice)', 250, 'main', [], ['cheese pizza']),
+    I('Extramostbestest Pepperoni (slice)', 330, 'main'), I('Deep!Deep! Dish (slice)', 360, 'main', [], ['deep dish']),
+    I('Crazy Bread (each)', 100, 'side', [], ['crazy bread']), I('Crazy Sauce', 45, 'side'), Z('Caesar Wings', [['8 pc', 600]], 'main', [], ['wings']),
+  ] },
+  // ── subs, bowls & salads ──
+  { id: 'jerseymikes', name: "Jersey Mike's", e: '🥖', bg: '#0a1a3a', fg: '#6a9cff', g: 'subs', a: ['jersey mikes', 'jersey mike s'], items: [
+    Z('#13 Original Italian (Mike’s Way)', [['Mini', 470], ['Regular', 790], ['Giant', 1570]], 'main', ['noCheese'], ['original italian', '13']),
+    Z('#7 Turkey & Provolone', [['Mini', 380], ['Regular', 640], ['Giant', 1280]], 'main', ['noCheese', 'addMayo'], ['turkey and provolone']),
+    Z('#17 Philly Cheesesteak', [['Mini', 420], ['Regular', 720], ['Giant', 1420]], 'main', [], ['philly cheesesteak', 'philly']),
+    Z('#43 Chipotle Cheesesteak', [['Mini', 540], ['Regular', 900], ['Giant', 1800]], 'main', [], ['chipotle cheesesteak']),
+    Z('#9 Club Supreme', [['Mini', 500], ['Regular', 830], ['Giant', 1660]], 'main', ['noMayo'], ['club supreme']),
+    I('Chips (bag)', 230, 'side', [], ['chips']), I('Cookie', 230, 'dessert', [], ['cookie']),
+  ] },
+  { id: 'jimmyjohns', name: "Jimmy John's", e: '🥪', bg: '#1a1a1a', fg: '#ffffff', g: 'subs', a: ['jimmy johns', 'jimmy john s'], items: [
+    I('#4 Turkey Tom', 480, 'main', ['noMayo'], ['turkey tom']), I('#5 Vito', 640, 'main', [], ['vito']), I('#9 Italian Night Club', 900, 'main', ['noMayo'], ['italian night club']),
+    I('#12 Beach Club', 620, 'main', ['noMayo'], ['beach club']), I('Gargantuan', 1070, 'main', ['noMayo'], ['gargantuan']), I('Unwich (Turkey Tom)', 250, 'main', [], ['unwich']),
+    I('Jimmy Chips', 230, 'side', [], ['chips']), I('Pickle', 20, 'side'), I('Cookie', 410, 'dessert', [], ['cookie']),
+  ] },
+  { id: 'panera', name: 'Panera Bread', e: '🥖', bg: '#1a2a0a', fg: '#a3d96a', g: 'subs', a: ['panera'], items: [
+    Z('Broccoli Cheddar Soup', [['Cup', 240], ['Bowl', 360], ['Bread bowl', 890]], 'main', [], ['broccoli cheddar']),
+    I('Chipotle Chicken Avo Melt (whole)', 900, 'main', [], ['chipotle chicken avo']), I('Bacon Turkey Bravo (whole)', 820, 'main', [], ['turkey bravo']),
+    I('Fuji Apple Salad w/ Chicken (whole)', 570, 'main'), I('Caesar Salad w/ Chicken (whole)', 470, 'main'), Z('Mac & Cheese', [['Cup', 470], ['Bowl', 940]], 'main', [], ['mac']),
+    I('Plain Bagel', 290, 'breakfast', [], ['bagel']), I('Baguette (side)', 180, 'side'), I('Chocolate Chipper Cookie', 390, 'dessert', [], ['cookie']),
+  ] },
+  { id: 'cava', name: 'CAVA', e: '🥙', bg: '#2a1a0a', fg: '#ffb26b', g: 'subs', a: ['cava'], items: [
+    I('Greens + Grains Bowl (chicken)', 720, 'main', [], ['cava bowl', 'bowl']), I('Grains Bowl (chicken)', 820, 'main'), I('Harissa Avocado Bowl', 850, 'main'),
+    I('Pita (chicken)', 790, 'main', [], ['pita']), I('Kids Meal', 400, 'main'), I('Pita Chips', 520, 'side'), I('Hummus (side)', 110, 'side'),
+  ] },
+  { id: 'sweetgreen', name: 'Sweetgreen', e: '🥗', bg: '#0f2a14', fg: '#6ade80', g: 'subs', a: ['sweetgreen', 'sweet green'], items: [
+    I('Harvest Bowl', 705, 'main', [], ['harvest bowl']), I('Kale Caesar', 430, 'main', [], ['kale caesar']), I('Chicken Pesto Parm', 530, 'main'),
+    I('Crispy Rice Bowl', 660, 'main'), I('Fish Taco Bowl', 650, 'main'), I('Guacamole Greens', 530, 'main'),
+  ] },
+  // ── coffee, smoothies & sweets ──
+  { id: 'dutch', name: 'Dutch Bros', e: '☕', bg: '#0a1f3a', fg: '#6aa8ff', g: 'sweets', a: ['dutch bros', 'dutch brothers'], items: [
+    Z('Golden Eagle (breve)', SML(380, 490, 640), 'drink', ['skim'], ['golden eagle']), Z('Caramelizer', SML(330, 450, 600), 'drink', ['skim'], ['caramelizer']),
+    Z('Rebel (energy)', SML(200, 280, 380), 'drink', ['sfSyrup'], ['rebel']), Z('Cold Brew', SML(10, 15, 20), 'drink', [], ['cold brew']),
+    Z('Freeze (mocha)', SML(450, 600, 780), 'drink', ['noWhip'], ['freeze']),
+  ] },
+  { id: 'smoothieking', name: 'Smoothie King', e: '🥤', bg: '#2a0a14', fg: '#ff6b9a', g: 'sweets', a: ['smoothie king'], items: [
+    Z('Angel Food', [['20 oz', 330], ['32 oz', 530]], 'drink', [], ['angel food']), Z('Gladiator (protein)', [['20 oz', 230], ['32 oz', 370]], 'drink', [], ['gladiator']),
+    Z('The Activator Recovery', [['20 oz', 400], ['32 oz', 640]], 'drink', [], ['activator']), Z('The Hulk (strawberry)', [['20 oz', 900], ['32 oz', 1440]], 'drink', [], ['the hulk', 'hulk']),
+    Z('Lean1 (strawberry)', [['20 oz', 260], ['32 oz', 420]], 'drink', [], ['lean1']),
+  ] },
+  { id: 'tropical', name: 'Tropical Smoothie Cafe', e: '🍍', bg: '#0a2a24', fg: '#5fd9c3', g: 'sweets', a: ['tropical smoothie'], items: [
+    I('Sunrise Sunset (24 oz)', 370, 'drink', [], ['sunrise sunset']), I('Bahama Mama (24 oz)', 510, 'drink', [], ['bahama mama']), I('Peanut Paradise (24 oz)', 770, 'drink'),
+    I('Chicken Pesto Flatbread', 530, 'main'), I('Supergreen Caesar Wrap', 600, 'main'), I('Chipotle Chicken Club Wrap', 750, 'main'),
+  ] },
+  { id: 'crumbl', name: 'Crumbl', e: '🍪', bg: '#2a1420', fg: '#ff9ad1', g: 'sweets', a: ['crumbl'], items: [
+    Z('Milk Chocolate Chip Cookie', [['1/4 cookie', 180], ['Whole', 720]], 'dessert', [], ['crumbl cookie']),
+    Z('Weekly Specialty Cookie', [['1/4 cookie', 200], ['Whole', 800]], 'dessert'), Z('Chilled Sugar Cookie', [['1/4 cookie', 170], ['Whole', 680]], 'dessert'),
+  ] },
+  { id: 'krispy', name: 'Krispy Kreme', e: '🍩', bg: '#0f2a1a', fg: '#6ade9a', g: 'sweets', a: ['krispy kreme'], items: [
+    I('Original Glazed', 190, 'dessert', [], ['original glazed', 'glazed']), I('Chocolate Iced Glazed', 240, 'dessert'), I('Chocolate Iced Kreme Filled', 350, 'dessert'),
+    I('Glazed Raspberry Filled', 290, 'dessert'), I('Glazed Doughnut Holes (4)', 210, 'dessert'),
+  ] },
+  { id: 'shipley', name: 'Shipley Do-Nuts', e: '🍩', bg: '#2a1a05', fg: '#ffbf4a', g: 'sweets', a: ['shipley', 'shipleys'], items: [
+    I('Glazed Do-Nut', 190, 'dessert', [], ['glazed']), I('Chocolate Iced', 240, 'dessert'), I('Sausage Kolache', 330, 'breakfast', [], ['kolache']),
+    I('Sausage, Egg & Cheese Kolache', 400, 'breakfast'), I('Donut Holes (6)', 250, 'dessert'),
+  ] },
+  // ── sit-down ──
+  { id: 'chilis', name: "Chili's", e: '🌶️', bg: '#2a0a0a', fg: '#ff6b5c', g: 'sitdown', a: ['chilis', 'chili s'], items: [
+    I('Big Mouth Bites (w/ fries)', 1500, 'main', [], ['big mouth bites']), I('Oldtimer w/ Cheese (w/ fries)', 1300, 'main', [], ['oldtimer']),
+    I('Crispy Chicken Crispers (w/ fries & slaw)', 1400, 'main', [], ['chicken crispers', 'crispers']), I('Classic Sirloin 6 oz (w/ 2 sides)', 700, 'main'),
+    I('Chicken Fajitas (w/ tortillas)', 1100, 'main', [], ['fajitas']), I('Triple Dipper (shared)', 2000, 'side', [], ['triple dipper']),
+    I('Southwestern Egg Rolls', 900, 'side', [], ['southwestern egg rolls']), I('Skillet Queso w/ chips', 1000, 'side', [], ['skillet queso']),
+    I('Molten Chocolate Cake', 1150, 'dessert', [], ['molten cake']), I('Presidente Margarita', 330, 'drink'),
+  ] },
+  { id: 'olivegarden', name: 'Olive Garden', e: '🍝', bg: '#1a2a0a', fg: '#a3d96a', g: 'sitdown', a: ['olive garden'], items: [
+    I('Breadstick', 140, 'side', [], ['breadstick']), I('House Salad (w/ dressing)', 150, 'side', [], ['house salad']), I('Zuppa Toscana (bowl)', 220, 'side', [], ['zuppa toscana']),
+    I('Fettuccine Alfredo', 1310, 'main', [], ['fettuccine alfredo', 'alfredo']), I('Chicken Parmigiana', 1050, 'main', [], ['chicken parm']),
+    I('Tour of Italy', 1550, 'main', [], ['tour of italy']), I('Lasagna Classico', 940, 'main', [], ['lasagna']), I('Chicken Alfredo', 1570, 'main'),
+    I('Spaghetti w/ Meat Sauce', 700, 'main'), I('Tiramisu', 470, 'dessert', [], ['tiramisu']),
+  ] },
+  { id: 'roadhouse', name: 'Texas Roadhouse', e: '🤠', bg: '#2a1205', fg: '#ff9a5c', g: 'sitdown', a: ['texas roadhouse'], items: [
+    I('Roll w/ Cinnamon Butter', 260, 'side', [], ['roll', 'rolls']), I('6 oz Sirloin', 250, 'main', [], ['sirloin']), I('12 oz Ribeye', 900, 'main', [], ['ribeye']),
+    I('16 oz Ribeye', 1200, 'main'), I('Country Fried Sirloin w/ gravy', 900, 'main', [], ['country fried']), I('Fall-Off-The-Bone Ribs (half)', 1000, 'main', [], ['ribs']),
+    I('Cactus Blossom (shared)', 2000, 'side', [], ['cactus blossom']), I('Loaded Baked Potato', 600, 'side', [], ['loaded baked potato']), I('Seasoned Rice', 260, 'side'),
+    I('Steak Fries', 360, 'side', [], ['steak fries']), I('Green Beans', 120, 'side'),
+  ] },
+  { id: 'cheesecake', name: 'The Cheesecake Factory', e: '🍰', bg: '#2a1a0a', fg: '#ffcf8a', g: 'sitdown', a: ['cheesecake factory'], items: [
+    I('Louisiana Chicken Pasta', 2100, 'main', [], ['louisiana chicken pasta']), I('Fettuccini Alfredo', 1600, 'main'), I('Chicken Madeira', 1300, 'main', [], ['chicken madeira']),
+    I('Factory Burrito Grande', 2000, 'main'), I('Brown Bread (2 slices w/ butter)', 400, 'side', [], ['brown bread']), I('Avocado Egg Rolls', 1200, 'side', [], ['avocado egg rolls']),
+    I('Original Cheesecake (slice)', 830, 'dessert', [], ['original cheesecake']), I('Specialty Cheesecake (slice)', 1300, 'dessert', [], ['cheesecake']),
+  ] },
+  { id: 'steakhouse', name: 'Steakhouses (Bob’s, Pappas Bros, III Forks…)', e: '🥩', bg: '#2a0a0a', fg: '#ff7a6b', g: 'sitdown', est: true,
+    a: ['bobs steak', 'pappas bros', 'iii forks', 'del friscos', 'ruths chris', 'perrys', 'steakhouse', 'nick and sams', 'nick sams', 'capital grille'], items: [
+    Z('Ribeye', [['14 oz', 1150], ['22 oz', 1800]], 'main', [], ['ribeye']), Z('Filet Mignon', [['8 oz', 600], ['12 oz', 900]], 'main', [], ['filet']),
+    I('NY Strip (16 oz)', 1000, 'main', [], ['strip', 'ny strip']), I('Bone-in Ribeye / Cowboy (22 oz)', 1800, 'main', [], ['cowboy']),
+    I('Lobster Mac & Cheese', 1000, 'side', [], ['lobster mac']), I('Creamed Spinach', 400, 'side', [], ['creamed spinach']), I('Mashed Potatoes', 450, 'side', [], ['mashed potatoes']),
+    I('Glazed Carrot (Bob’s)', 300, 'side', [], ['glazed carrot']), I('Wedge Salad', 550, 'side', [], ['wedge salad']), I('Bread & Butter', 300, 'side'),
+    I('Old Fashioned', 180, 'drink', [], ['old fashioned']), I('Glass of Red Wine', 125, 'drink', [], ['red wine', 'wine']), I('Cheesecake / Chocolate cake (slice)', 900, 'dessert'),
+  ] },
+  { id: 'wafflehouse', name: 'Waffle House', e: '🧇', bg: '#2a2405', fg: '#ffe14a', g: 'sitdown', a: ['waffle house'], items: [
+    I('All-Star Special', 1100, 'breakfast', [], ['all star special', 'all star']), I('Waffle (plain)', 410, 'breakfast', [], ['waffle']), I('Pecan Waffle', 530, 'breakfast'),
+    Z('Hashbrowns', [['Regular', 190], ['Large', 380]], 'side', [], ['hashbrowns', 'hash browns']), I('Hashbrowns Scattered, Smothered & Covered', 420, 'side', [], ['smothered and covered']),
+    I('Texas Bacon Patty Melt', 980, 'main'), I('Two Eggs', 180, 'breakfast'), I('Bacon (3 strips)', 140, 'side'), I('Raisin Toast', 220, 'side'),
+  ] },
+  { id: 'ihop', name: 'IHOP', e: '🥞', bg: '#0a1a3a', fg: '#6a9cff', g: 'sitdown', a: ['ihop'], items: [
+    Z('Original Buttermilk Pancakes', [['Short stack (3)', 450], ['Full stack (5)', 750]], 'breakfast', [], ['buttermilk pancakes', 'pancakes']),
+    I('Breakfast Sampler', 1250, 'breakfast', [], ['breakfast sampler']), I('Split Decision Breakfast', 1100, 'breakfast'), I('Big Steak Omelette', 1100, 'breakfast'),
+    I('Rooty Tooty Fresh ’N Fruity', 900, 'breakfast'), I('Syrup (per pour)', 120, 'side', [], ['syrup']), I('Hash Browns', 210, 'side'), I('Burger + Fries', 1200, 'main'),
+  ] },
+);
+
+/** Groups for the restaurant picker (existing chains get theirs here). */
+const FF_GROUPS = [['fast', 'Fast food'], ['chicken', 'Chicken'], ['burgers', 'Burgers'], ['texmex', 'Tacos & Tex-Mex'], ['bbq', 'BBQ & Southern'], ['pizza', 'Pizza'],
+  ['subs', 'Subs, bowls & salads'], ['asian', 'Asian'], ['sweets', 'Coffee, smoothies & sweets'], ['sitdown', 'Sit-down']];
+const FF_GROUP_OF = { mcd: 'fast', bk: 'fast', wen: 'fast', sonic: 'fast', wb: 'burgers', five: 'burgers', cfa: 'chicken', pop: 'chicken', tb: 'texmex', chip: 'texmex',
+  sub: 'subs', panda: 'asian', sbux: 'sweets', dunk: 'sweets', dom: 'pizza' };
+FF_CHAINS.forEach(c => { c.g ||= FF_GROUP_OF[c.id] || 'fast'; });

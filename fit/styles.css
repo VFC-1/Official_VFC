@@ -442,3 +442,6 @@ body[data-tier="diamond"] .band::after{background:linear-gradient(110deg,transpa
 .steps b{color:var(--text)}
 label.btn{cursor:pointer}
 .btn.disabled{opacity:.45;pointer-events:none}
+.ff-chain{position:relative}
+.ff-chain em{position:absolute;top:6px;right:8px;font-style:normal;font-size:9.5px;font-weight:700;color:var(--dim);letter-spacing:.04em}
+.ff-est{margin:-4px 4px 10px;font-size:12.5px;color:var(--muted)}
