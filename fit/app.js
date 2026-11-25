@@ -200,12 +200,12 @@ const FOODS = [
   // fruit & veg
   [['banana'], 105, 'banana'], [['apple'], 95, 'apple'], [['orange'], 65, 'orange'], [['grape'], 100, 'cup'], [['berries', 'strawberries', 'blueberries', 'strawberry', 'blueberry'], 70, 'cup'],
   [['watermelon'], 85, 'cup'], [['pineapple'], 80, 'cup'], [['mango'], 200, 'mango'], [['peach'], 60, 'peach'], [['fruit', 'fruit cup'], 80, 'cup'],
-  [['salad', 'side salad'], 200, 'bowl'], [['caesar salad'], 450, 'bowl'], [['broccoli', 'veggies', 'vegetables', 'green beans', 'carrots', 'corn', 'peas', 'spinach'], 60, 'cup'],
+  [['salad', 'side salad'], 200, 'bowl'], [['chicken salad', 'grilled chicken salad', 'salad with chicken'], 450, 'bowl'], [['ranch', 'ranch dressing', 'dressing'], 140, '2 tbsp'], [['caesar salad'], 450, 'bowl'], [['broccoli', 'veggies', 'vegetables', 'green beans', 'carrots', 'corn', 'peas', 'spinach'], 60, 'cup'],
   [['avocado'], 240, 'avocado'], [['guacamole', 'guac'], 230, 'half cup'], [['pickle'], 5, 'pickle'],
   // mains
   [['chicken', 'chicken breast', 'grilled chicken', 'baked chicken'], 280, 'breast'], [['fried chicken'], 400, 'piece'], [['nugget', 'chicken nugget'], 48, 'nugget'],
-  [['wing', 'chicken wing', 'hot wing'], 90, 'wing'], [['tender', 'chicken tender', 'chicken strip'], 130, 'tender'], [['rotisserie chicken'], 450, 'quarter'],
-  [['steak'], 600, 'steak'], [['ribeye'], 750, 'steak'], [['brisket'], 350, 'serving'], [['ribs', 'rib'], 900, 'half rack'], [['pulled pork'], 400, 'serving'],
+  [['wing', 'chicken wing', 'hot wing'], 90, 'wing'], [['tender', 'chicken tender', 'chicken strip', 'chicken finger'], 130, 'tender'], [['rotisserie chicken'], 450, 'quarter'],
+  [['steak'], 600, 'steak'], [['ribeye', 'ribeye steak'], 750, 'steak'], [['sirloin', 'sirloin steak'], 350, '8 oz'], [['filet', 'filet mignon'], 500, '8 oz'], [['t bone', 't bone steak'], 800, 'steak'], [['brisket'], 350, 'serving'], [['ribs', 'rib'], 900, 'half rack'], [['pulled pork'], 400, 'serving'],
   [['pork chop'], 300, 'chop'], [['ham'], 60, 'slice'], [['turkey'], 50, 'slice'], [['meatball'], 75, 'meatball'], [['meatloaf'], 350, 'slice'],
   [['burger', 'hamburger', 'cheeseburger'], 600, 'burger'], [['hot dog', 'corn dog'], 290, 'hot dog'],
   [['salmon'], 360, 'fillet'], [['tuna'], 180, 'can'], [['shrimp'], 120, 'serving'], [['fish', 'tilapia', 'catfish', 'cod'], 250, 'fillet'], [['fish sticks'], 50, 'stick'],
@@ -214,8 +214,11 @@ const FOODS = [
   [['fajita', 'fajitas', 'chicken fajitas', 'beef fajitas', 'fajita chicken', 'fajita beef', 'steak fajitas', 'fajita plate'], 900, 'plate'], [['enchilada'], 330, 'enchilada'], [['tamale'], 285, 'tamale'],
   [['tortilla', 'flour tortilla'], 140, 'tortilla'], [['chips and salsa', 'tortilla chips'], 430, 'basket'], [['queso'], 120, 'quarter cup'], [['salsa', 'pico'], 15, 'serving'],
   [['refried beans', 'beans', 'black beans', 'charro beans'], 220, 'cup'], [['mexican rice', 'spanish rice'], 220, 'cup'], [['sour cream'], 60, '2 tbsp'],
-  [['sandwich', 'sub', 'hoagie'], 450, 'sandwich'], [['grilled cheese'], 440, 'sandwich'], [['pbj', 'pb and j', 'peanut butter and jelly'], 380, 'sandwich'],
-  [['beef n cheddar', 'roast beef'], 450, 'sandwich'], [['wrap'], 450, 'wrap'], [['sushi', 'sushi roll', 'roll of sushi'], 300, 'roll'], [['ramen'], 450, 'bowl'], [['pho'], 450, 'bowl'],
+  [['sandwich', 'sub', 'hoagie', 'turkey sandwich', 'ham sandwich', 'club sandwich', 'blt'], 450, 'sandwich'], [['chicken sandwich', 'fried chicken sandwich'], 550, 'sandwich'], [['steak sandwich', 'cheesesteak', 'philly cheesesteak'], 650, 'sandwich'], [['grilled cheese'], 440, 'sandwich'], [['pbj', 'pb and j', 'peanut butter and jelly'], 380, 'sandwich'],
+  [['beef n cheddar', 'roast beef'], 450, 'sandwich'], [['wrap'], 450, 'wrap'], [['sushi', 'sushi roll', 'roll of sushi', 'crab roll', 'kani roll'], 300, 'roll'], [['spicy crab roll', 'spicy tuna roll', 'spicy salmon roll', 'spicy roll'], 360, 'roll'],
+  [['california roll'], 260, 'roll'], [['philadelphia roll', 'philly roll'], 320, 'roll'], [['shrimp tempura roll', 'tempura roll', 'crunchy roll', 'dragon roll', 'rainbow roll', 'specialty roll'], 480, 'roll'],
+  [['cucumber roll', 'avocado roll', 'veggie roll'], 160, 'roll'], [['nigiri'], 60, 'piece'], [['sashimi'], 35, 'piece'], [['edamame'], 190, 'cup'], [['miso soup'], 40, 'bowl'],
+  [['poke bowl', 'poke'], 600, 'bowl'], [['teriyaki chicken', 'chicken teriyaki'], 450, 'plate'], [['hibachi', 'hibachi chicken', 'hibachi steak'], 900, 'plate'], [['bento', 'bento box'], 700, 'box'], [['dinner roll'], 100, 'roll'], [['ramen'], 450, 'bowl'], [['pho'], 450, 'bowl'],
   [['fried rice'], 520, 'plate'], [['orange chicken'], 490, 'serving'], [['lo mein', 'chow mein'], 500, 'plate'], [['egg roll'], 200, 'egg roll'], [['dumpling', 'potsticker'], 60, 'dumpling'],
   [['rice', 'white rice', 'brown rice'], 205, 'cup'], [['pasta', 'spaghetti', 'noodles', 'penne', 'fettuccine'], 400, 'plate'], [['spaghetti and meatballs'], 700, 'plate'],
   [['lasagna'], 450, 'piece'], [['mac and cheese', 'mac n cheese', 'macaroni'], 400, 'cup'], [['alfredo'], 900, 'plate'],
@@ -241,13 +244,30 @@ const NUMWORDS = { a: 1, an: 1, one: 1, two: 2, three: 3, four: 4, five: 5, six:
 const ffNorm = t => ` ${String(t).toLowerCase().replace(/&/g, ' and ').replace(/[’'®™.!?]/g, '').replace(/-/g, ' ').replace(/[^a-z0-9"\s]/g, ' ').replace(/\s+/g, ' ').trim()} `;
 const has = (hay, needle) => hay.includes(` ${needle.trim()} `);
 const FF_GENERIC = new Set(['burrito', 'bowl', 'salad', 'taco', 'tacos', 'pizza', 'pasta', 'donut', 'coffee', 'latte', 'cookie', 'chips', 'muffin', 'croissant', 'bagel', 'pepperoni', 'breast', 'thigh', 'leg', 'drumstick', 'wing', 'wings', 'biscuit', 'mac', 'chili', 'baked potato', 'pancakes', 'hotcakes', 'cone', 'lemonade', 'iced coffee', 'chai', 'mocha', 'quesadilla', 'philly', 'teriyaki', 'meatball', 'boneless', 'alfredo', 'garlic bread', 'onion rings', 'tots', 'tater tots', 'slaw', 'coleslaw', 'mashed potatoes', 'egg roll', 'white rice', 'fried rice', 'guac', 'queso', 'minis', 'refresher', 'macchiato', 'shake', 'milkshake', 'tea', 'fries', 'nuggets', 'tenders', 'strips', 'cheeseburger', 'hot dog', 'hash brown', 'hash browns', 'red beans', 'cajun fries', 'apple pie', 'frap', 'chicken sandwich', 'spicy chicken sandwich', 'spicy chicken', 'grilled nuggets', 'cookie', 'iced latte', 'turkey sub', 'tuna sub', 'drip coffee', 'super greens', 'thin crust', 'pan pizza', 'cheese pizza', 'pepperoni pizza', 'bacon egg and cheese', 'sausage egg and cheese', 'chips and cheese', 'teriyaki chicken', 'cobb salad', 'chicken biscuit', 'mac and cheese', 'coke', 'soda', 'pop', 'sprite', 'dr pepper', 'pepsi', 'blast', 'little burger', 'leg', 'strips', 'frosty']);
+// Everyday words that appear on menus but shouldn't pull a whole restaurant in when typed alone.
+const FF_GENERIC_EXTRA = new Set(['fingers', 'finger', 'slider', 'sauce', 'bowl', 'pita', 'sirloin', 'filet', 'strip', 'ranch', 'blue cheese', 'glazed', 'original glazed', 'combo plate', 'taco plate',
+  'enchilada plate', 'swirl', 'pinata', 'cobbler', 'cowboy', 'old fashioned', 'curds', 'cheese curds', 'steakburger', 'freeze', 'rebel', 'hulk', 'the hulk', 'cold brew', 'concrete', 'custard',
+  'concrete mixer', 'the works', '13', 'roll', 'rolls', 'country fried', 'red wine', 'wine', 'margarita', 'frozen margarita', 'street tacos', 'street corn', 'elote', 'fried corn', 'boneless',
+  'classic wings', 'bone in', 'wings', 'seasoned fries', 'crinkle fries', 'curly fries', 'steak fries', 'fry sauce', 'garlic knots', 'garlic sauce', 'crazy bread', 'deep dish', 'personal pan',
+  'breadstick', 'house salad', 'wedge salad', 'creamed spinach', 'lobster mac', 'glazed carrot', 'loaded baked potato', 'mozzarella sticks', 'chicken bites', 'egg rolls', 'avocado egg rolls',
+  'two tenders', 'two sliders', 'tikka', 'shack burger', 'hot n ready', 'kids meal', 'lean brisket', 'jalapeno cheddar sausage', 'stuffed potato', 'hot mess', 'bbq sauce', 'fajita plate',
+  'chips and salsa', 'chips and queso', 'chips and guac', 'buttermilk pancakes', 'smothered and covered', 'breakfast sampler', 'all star', 'roast beef', 'brisket sandwich', 'philly cheesesteak',
+  'cheesecake', 'original cheesecake', 'molten cake', 'skillet queso', 'red velvet', 'red velvet cake', 'key lime pie', 'brown bread', 'zuppa toscana', 'chicken parm', 'fettuccine alfredo',
+  'turkey and provolone', 'texas toast', 'canes sauce', 'daves sauce', 'cream corn', 'green chile queso', 'fried avocado', 'tipsy chick', 'baja taco', 'baja shrimp', 'muchaco', 'party nachos']);
+const FOOD_WORDS = FOODS.flatMap(f => f[0].map(k => ffNorm(k).trim()));
+/** True when a menu alias is (or contains) an everyday food word, e.g. "turkey", "brisket sandwich". */
+function hasFoodWord(alias) {
+  const at = alias.split(' ');
+  const same = (x, w) => x === w || x === w + 's' || x === w + 'es' || w === x + 's' || w === x + 'es';
+  return FOOD_WORDS.some(k => { const kt = k.split(' '); for (let i = 0; i + kt.length <= at.length; i++) if (kt.every((w, j) => same(at[i + j], w))) return true; return false; });
+}
 const FF_INDEX = (() => {
   const count = {};
   FF_CHAINS.forEach(c => new Set(c.items.flatMap(it => it.a.map(a => ffNorm(a).trim()))).forEach(a => { count[a] = (count[a] || 0) + 1; }));
   const global = [];
   FF_CHAINS.forEach(c => c.items.forEach(it => {
     // Only curated, chain-specific aliases match without the restaurant being named.
-    it.a.map(a => ffNorm(a).trim()).forEach(k => { if (!FF_GENERIC.has(k) && count[k] === 1 && k.length > 3) global.push({ k, c, it }); });
+    it.a.map(a => ffNorm(a).trim()).forEach(k => { if (!FF_GENERIC.has(k) && !FF_GENERIC_EXTRA.has(k) && !hasFoodWord(k) && count[k] === 1 && k.length > 3) global.push({ k, c, it }); });
   }));
   global.sort((a, b) => b.k.length - a.k.length);
   return { global };
@@ -287,10 +307,10 @@ function ffMatchPart(part, ctx) {
       for (const k of keys) if (has(t, k)) score = Math.max(score, 10 + k.length);
       if (!score) {
         const toks = ffNorm(it.n.replace(/\(.*?\)/g, '')).trim().split(' ').filter(w => !STOP.has(w) && w.length > 1);
-        const hit = toks.filter(w => has(t, w) || has(t, w.replace(/s$/, ''))).length;
+        const hit = toks.filter(w => has(t, w) || has(t, w + 's') || has(t, w + 'es') || has(t, w.replace(/s$/, ''))).length;
         if (hit) score = hit / toks.length * 5 + hit;
       }
-      if (score && (!best || score > best.score || (score === best.score && it.n.length < best.it.n.length))) best = { score, it, c: chain };
+      if (score && (!best || score > best.score)) best = { score, it, c: chain };
     }
   }
   if (!best || best.score < 2) {
@@ -305,12 +325,19 @@ function ffMatchPart(part, ctx) {
     const pc = t.match(/ (\d+) ?(pc|piece|pieces|ct|count|nuggets|tenders|strips|wings)\b/);
     const labels = it.s.map(x => ffNorm(x[0]).trim());
     let found = -1;
-    if (pc) found = labels.findIndex(l => l.startsWith(pc[1] + ' '));
+    const lb = t.match(/ (\d\/\d|\d+) ?lb\b/);
+    if (lb) found = labels.findIndex(l => l.startsWith(lb[1] + ' lb') || l.startsWith(lb[1].replace('/', ' ') + ' lb'));
+    if (found < 0 && pc) found = labels.findIndex(l => l.startsWith(pc[1] + ' '));
+    if (found < 0) found = labels.findIndex(l => l.length > 2 && !/^\d/.test(l) && has(t, l));
     if (found < 0) for (const [re, opts] of SIZE_WORDS) if (re.test(t)) { found = labels.findIndex(l => opts.includes(l)); if (found >= 0) break; }
     if (found >= 0) sizeIdx = found;
   }
-  const n = t.match(/^ (\d+(?:\.\d+)?)(?! ?(pc|piece|ct|count|oz|inch|"))/), w = t.trim().split(' ').find(x => NUMWORDS[x] && x !== 'a');
-  const qty = n ? parseFloat(n[1]) : w ? NUMWORDS[w] : 1;
+  let lead = t;
+  for (const n of [best.c.name, ...best.c.a].map(x => ffNorm(x).trim()).sort((a, b) => b.length - a.length)) if (has(lead, n)) { lead = lead.replace(` ${n} `, ' '); break; }
+  const first = lead.trim().split(' ')[0];
+  const n = lead.match(/^ (\d+(?:\.\d+)?)(?! ?(pc|piece|ct|count|oz|inch|lb|"|\/))/);
+  const ffNameWords = ffNorm(it.n).trim().split(' ');
+  const qty = n && !ffNameWords.includes(n[1]) ? parseFloat(n[1]) : (NUMWORDS[first] && first !== 'a' && !ffNameWords.includes(first)) ? NUMWORDS[first] : 1;
   const tweaks = [];
   for (const [phrase, keys] of TWEAK_WORDS) {
     if (!has(t, phrase) || (!phrase.startsWith('no ') && has(t, 'no ' + phrase))) continue;
@@ -352,6 +379,8 @@ function scanFoods(part) {
       hits.push({ i, name: kt.join(' '), f, qty, cal: Math.round(f[1] * qty * size) });
     }
   }
+  // "from Eatzi's in Plano", "at mom's": place names, not foods
+  for (let i = 0; i < toks.length; i++) if (['from', 'at', 'in'].includes(toks[i])) for (let j = i + 1; j < toks.length && !used[j]; j++) used[j] = true;
   const unknown = toks.filter((w, i) => !used[i] && !FILLER.has(w) && !/^\d/.test(w) && !NUMWORDS[w] && w.length > 2);
   return { hits: hits.sort((a, b) => a.i - b.i), unknown };
 }
@@ -361,7 +390,7 @@ function localFoodEstimate(text) {
   const unknown = [];
   for (const part of parts) {
     const ff = ffMatchPart(part, ctx);
-    if (ff) { ctx = ff.chain; menuHits++; items.push({ name: `${ff.chain.name} ${ff.name}`, short: ff.name.replace(/ \(.*\)$/, ''), chain: ff.chain.name, portion: '', calories: ff.cal }); total += ff.cal; continue; }
+    if (ff) { ctx = ff.chain; menuHits++; const cn = ff.chain.name.replace(/ \(.*\)$/, ''); items.push({ name: `${cn} ${ff.name}`, short: ff.name.replace(/ \(.*\)$/, ''), chain: cn, portion: '', calories: ff.cal }); total += ff.cal; continue; }
     const { hits, unknown: u } = scanFoods(part);
     for (const h of hits) { items.push({ name: `${h.qty !== 1 ? h.qty + ' × ' : ''}${h.name}`, portion: h.name.includes(h.f[2]) || h.f[2].includes(h.name) ? '' : `per ${h.f[2]}`, calories: h.cal }); total += h.cal; }
     if (!hits.length) unknown.push(part); else unknown.push(...u.filter(w => !chainIn(` ${w} `)));
@@ -502,7 +531,7 @@ let tab = 'today', viewDay = todayKey();
 function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('show'), 2400); }
 function haptic() { try { navigator.vibrate?.(10); } catch { } }
 function openSheet(html, onMount) {
-  const sh = $('#sheet'); sh.innerHTML = `<div class="grabber"></div>${html}`;
+  const sh = $('#sheet'); sh.innerHTML = `<div class="grabber"></div>${html}`; sh.scrollTop = 0;
   sh.classList.add('open'); $('#backdrop').classList.add('open'); onMount?.(sh);
 }
 function closeSheet() { $('#sheet').classList.remove('open'); $('#backdrop').classList.remove('open'); }
@@ -642,7 +671,7 @@ function todayHTML() {
   </section>
   <nav class="dock" aria-label="Quick log">
     <button data-q="food"><span class="ic">🍽️</span>Food</button>
-    <button data-q="ff"><span class="ic">🍔</span>Fast food</button>
+    <button data-q="ff"><span class="ic">🍔</span>Restaurants</button>
     <button data-q="workout"><span class="ic">💪</span>Workout</button>
     <button data-q="weight"><span class="ic">⚖️</span>Weigh-in</button>
   </nav>
@@ -704,7 +733,7 @@ function foodSheet(opts = {}) {
     ${recents.length ? `<div class="sub" style="margin:0 0 8px 4px">Tap to re-add</div><div class="chips">${recents.map((f, i) => `<button class="chip" data-recent="${i}">${esc(f.name.length > 34 ? f.name.slice(0, 32) + '…' : f.name)} <small>${fmt(f.cal)}</small></button>`).join('')}</div>` : ''}
     <div class="grid2" style="margin-bottom:12px">
       <label class="tile-btn" id="photo-drop"><input type="file" accept="image/*" id="photo-in" hidden><span class="e">📷</span><span>Photo</span></label>
-      <button class="tile-btn" id="ff-open" type="button"><span class="e">🍔</span><span>Fast food</span></button>
+      <button class="tile-btn" id="ff-open" type="button"><span class="e">🍔</span><span>Restaurants</span></button>
     </div>
     <div id="photo-preview"></div>
     <div class="field"><label>What did you eat?</label><textarea class="input" id="food-txt" placeholder="e.g. 2 eggs and toast, or Big Mac and large fries"></textarea></div>
@@ -752,18 +781,19 @@ function foodSheet(opts = {}) {
 
 /* ═════════════ fast food order builder ═════════════ */
 let ffOrder = [];
-const FF_CATS = [['main', 'Mains'], ['breakfast', 'Breakfast'], ['side', 'Sides'], ['drink', 'Drinks'], ['dessert', 'Desserts'], ['build', 'Build your own']];
+const FF_CATS = [['combo', 'Combos'], ['main', 'Mains'], ['breakfast', 'Breakfast'], ['side', 'Sides'], ['drink', 'Drinks'], ['dessert', 'Desserts'], ['build', 'Build your own']];
 const ffTotal = () => ffOrder.reduce((a, l) => a + l.cal, 0);
 const chainLogo = (c, size = 44) => `<span class="ff-logo" style="width:${size}px;height:${size}px;background:${c.bg};color:${c.fg};font-size:${Math.round(size * 0.5)}px">${c.e}</span>`;
 function fastFoodSheet(view = { chain: null, q: '' }) {
   const chain = view.chain && FF_CHAINS.find(c => c.id === view.chain);
   openSheet(`<div class="row" style="gap:8px;margin-bottom:12px">
       <button class="icon-btn" id="ff-back" aria-label="Back">‹</button>
-      ${chain ? `${chainLogo(chain, 34)}<h2 style="margin:0">${esc(chain.name)}</h2>` : '<h2 style="margin:0">🍔 Fast food</h2>'}</div>
-    ${chain ? '' : `<input class="input" id="ff-q" type="search" placeholder="Search restaurants or items" value="${esc(view.q)}" autocomplete="off" style="margin-bottom:12px">`}
+      ${chain ? `${chainLogo(chain, 34)}<h2 style="margin:0;font-size:19px">${esc(chain.name)}</h2>` : '<h2 style="margin:0">🍔 Restaurants</h2>'}</div>
+    ${chain?.est ? '<p class="ff-est">This spot doesn’t publish nutrition info, so these are typical-portion estimates.</p>' : ''}
+    ${chain ? '' : `<input class="input" id="ff-q" type="search" placeholder="Search ${FF_CHAINS.length} restaurants or menu items" value="${esc(view.q)}" autocomplete="off" style="margin-bottom:12px">`}
     <div id="ff-body"></div>
     <div class="field" style="margin-top:14px"><label>Not on the menu? Type it</label>
-      <div class="row"><input class="input" id="ff-custom" placeholder="${chain ? `e.g. ${esc(chain.name)} seasonal special` : 'e.g. Arby’s beef n cheddar'}"><button class="btn secondary" id="ff-custom-go" style="width:auto;padding:0 16px">Add</button></div></div>
+      <div class="row"><input class="input" id="ff-custom" placeholder="${chain ? `e.g. ${esc(chain.name.replace(/ \(.*\)$/, ''))} special` : 'e.g. Arby’s beef n cheddar'}"><button class="btn secondary" id="ff-custom-go" style="width:auto;padding:0 16px">Add</button></div></div>
     <div id="ff-tray"></div>`, sh => {
     const body = $('#ff-body', sh);
     let open = null; // "chainId:itemIdx" currently expanded
@@ -786,7 +816,7 @@ function fastFoodSheet(view = { chain: null, q: '' }) {
         const chains = FF_CHAINS.filter(c => !q || ffNorm(c.name + ' ' + c.a.join(' ')).includes(q));
         const items = q.length >= 2 ? FF_CHAINS.flatMap(c => c.items.map((it, i) => ({ c, i, it }))).filter(x => ffNorm(x.it.n + ' ' + x.it.a.join(' ')).includes(q)).slice(0, 25) : [];
         body.innerHTML = `${!q && recent.length ? `<div class="ff-cat">Recent orders · tap to log</div><div class="chips">${recent.map((o, i) => `<button class="chip" data-reorder="${i}">${esc(o.name.length > 38 ? o.name.slice(0, 36) + '…' : o.name)} <small>${fmt(o.cal)}</small></button>`).join('')}</div>` : ''}
-          ${chains.length ? `<div class="ff-grid">${chains.map(c => `<button class="ff-chain" data-chain="${c.id}">${chainLogo(c)}<span>${esc(c.name)}</span></button>`).join('')}</div>` : ''}
+          ${chains.length ? FF_GROUPS.map(([g, label]) => { const cs = chains.filter(c => c.g === g); return cs.length ? `<div class="ff-cat">${label}</div><div class="ff-grid">${cs.map(c => `<button class="ff-chain" data-chain="${c.id}">${chainLogo(c)}<span>${esc(c.name.replace(/ \(.*\)$/, ''))}</span>${c.est ? '<em>est.</em>' : ''}</button>`).join('')}</div>` : ''; }).join('') : ''}
           ${items.length ? `<div class="ff-cat">Menu items</div>${items.map(x => itemRow(x.c, x.i, true)).join('')}` : ''}
           ${q && !chains.length && !items.length ? '<div class="empty">No match. Type it below and we’ll estimate it.</div>' : ''}`;
       }
@@ -983,6 +1013,7 @@ function exerciseSheet(w = newWorkout()) {
       <div class="field"><label>Duration (min)</label><input class="input" data-f="duration" inputmode="decimal" placeholder="30" value="${esc(w.duration)}"></div>`;
   };
   openSheet(`<div class="row between"><h2>💪 Log workout</h2><button class="link" id="wh-open" type="button">History & PRs ›</button></div>
+    <button class="peloton-btn" id="pel-open" type="button"><span class="pel-logo">🚴</span><span><b>Import from Peloton</b><small>Workout history file or a screenshot</small></span><span class="chev">›</span></button>
     ${tpl.length ? `<div class="row between" style="margin:0 4px 8px"><span class="sub">⭐ Favorites · tap to log</span><button class="link" id="tpl-edit" type="button">Edit</button></div>
       <div class="chips" id="tpl-chips">${tpl.map((t, i) => `<button class="chip" data-tpl="${i}">${esc(t.emoji || '⭐')} ${esc(t.name)}<span class="tpl-x hidden" data-tplx="${i}">✕</span></button>`).join('')}</div>` : ''}
     <div class="seg" style="margin-bottom:12px">${W_TYPES.map(([k, e, l]) => `<button type="button" data-type="${k}" class="${w.type === k ? 'on' : ''}">${e} ${l}</button>`).join('')}</div>
@@ -1012,6 +1043,7 @@ function exerciseSheet(w = newWorkout()) {
     $$('[data-cm]', sh).forEach(b => b.onclick = () => { w.calMode = b.dataset.cm; exerciseSheet(w); });
     $('#w-fav', sh).onclick = e => { fav = !fav; e.currentTarget.classList.toggle('on', fav); e.currentTarget.textContent = fav ? '★ Will save as favorite' : '☆ Save as favorite'; haptic(); };
     $('#wh-open', sh).onclick = workoutHistorySheet;
+    $('#pel-open', sh).onclick = pelotonSheet;
     let editing = false;
     const ed = $('#tpl-edit', sh);
     if (ed) ed.onclick = () => { editing = !editing; ed.textContent = editing ? 'Done' : 'Edit'; $$('.tpl-x', sh).forEach(x => x.classList.toggle('hidden', !editing)); };
@@ -1033,6 +1065,137 @@ function exerciseSheet(w = newWorkout()) {
     refresh();
   });
 }
+/* ═════════════ Peloton import ═════════════
+   Peloton has no public API, so Leanline never asks for your Peloton password.
+   Two ways in: the workout-history CSV Peloton lets you download, or a
+   screenshot of a workout summary read by AI (when AI is set up). */
+function parseCSV(text) {
+  const rows = []; let row = [], cell = '', q = false;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (q) { if (ch === '"') { if (text[i + 1] === '"') { cell += '"'; i++; } else q = false; } else cell += ch; }
+    else if (ch === '"') q = true;
+    else if (ch === ',') { row.push(cell); cell = ''; }
+    else if (ch === '\n' || ch === '\r') { if (ch === '\r' && text[i + 1] === '\n') i++; row.push(cell); rows.push(row); row = []; cell = ''; }
+    else cell += ch;
+  }
+  if (cell || row.length) { row.push(cell); rows.push(row); }
+  return rows.filter(r => r.some(c => c.trim()));
+}
+const PEL_KIND = [ // discipline keyword → [type, activity/sport, emoji]
+  [/run|tread|jog/i, 'cardio', 'Run', '🏃'], [/walk|hik/i, 'cardio', 'Walk', '🚶'], [/cycl|bike|ride/i, 'cardio', 'Bike', '🚴'], [/row/i, 'cardio', 'Row', '🚣'],
+  [/strength|bootcamp|tone/i, 'strength', null, '🏋️'], [/cardio|hiit|shadowbox|boxing|dance/i, 'cardio', 'HIIT', '⚡'], [/yoga|stretch|pilates|barre|meditat/i, 'other', null, '🧘'],
+];
+/** Turn one Peloton workout into a Leanline exercise entry. */
+function pelotonEntry({ discipline = '', title = '', minutes = 0, miles = 0, cal = 0, hr = 0, incline = 0, speed = 0, output = 0, id = '' }) {
+  const kind = PEL_KIND.find(([re]) => re.test(discipline + ' ' + title)) || [null, 'other', null, '🚴'];
+  // A "run" class done at walking speed is still a walk for the math
+  const activity = kind[2] === 'Run' && speed && speed < 4.2 ? 'Walk' : kind[2];
+  const w = { ...newWorkout(), type: kind[1], activity: activity || 'Run', desc: title || discipline || 'Peloton class', duration: minutes ? String(Math.round(minutes)) : '',
+    distance: miles ? String(miles) : '', hr: hr ? String(Math.round(hr)) : '', intensity: 'moderate', calMode: cal ? 'manual' : 'est', cal: cal ? String(Math.round(cal)) : '' };
+  if (w.type === 'strength') w.exercises = [];
+  const est = estimateWorkout(w);
+  const bits = [miles ? `${round(miles, 2)} mi` : '', incline ? `${round(incline, 1)}% incline` : '', speed ? `${round(speed, 1)} mph` : '', output ? `${Math.round(output)} kJ` : '', hr ? `${Math.round(hr)} bpm` : ''].filter(Boolean);
+  return {
+    name: `${title || discipline || 'Peloton class'}${minutes && !/\bmin/i.test(title) ? ` · ${Math.round(minutes)} min` : ''}`,
+    note: `Peloton${bits.length ? ' · ' + bits.join(' · ') : ''}${cal ? '' : ' · ≈ estimated'}`,
+    emoji: kind[3], cal: cal ? Math.round(cal) : est.cal, type: w.type, w, src: 'peloton', extId: id,
+  };
+}
+/** Add Peloton workouts to their own days, skipping ones already imported. */
+function addPelotonWorkouts(list) {
+  const seen = new Set(Object.values(S.days).flatMap(d => d.exercise.filter(e => e.extId).map(e => e.extId)));
+  let added = 0, dup = 0;
+  for (const { k, time, entry } of list) {
+    if (entry.extId && seen.has(entry.extId)) { dup++; continue; }
+    day(k).exercise.push({ id: uid(), time, ...entry }); seen.add(entry.extId); added++;
+  }
+  save(); evaluate(); render();
+  return { added, dup };
+}
+/** Same class → same id, whether it came from the file or a screenshot. */
+const pelId = d => `pel:${keyOf(d)} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+function importPelotonCSV(text) {
+  const rows = parseCSV(text); if (rows.length < 2) throw new Error('That file looks empty');
+  const head = rows[0].map(h => h.toLowerCase());
+  const col = (...keys) => head.findIndex(h => keys.some(k => h.includes(k)));
+  const c = {
+    ts: col('workout timestamp', 'timestamp', 'date'), disc: col('fitness discipline', 'discipline'), type: col('type'), title: col('title'),
+    len: col('length (minutes)', 'length', 'duration'), cal: col('calories'), dist: col('distance'), hr: col('heartrate', 'heart rate'),
+    inc: col('incline'), spd: col('speed'), out: col('total output', 'output'),
+  };
+  if (c.ts < 0 || (c.cal < 0 && c.len < 0)) throw new Error('This doesn’t look like a Peloton workouts file');
+  const num = (r, i) => { const v = i >= 0 ? parseFloat(String(r[i]).replace(/[^\d.]/g, '')) : NaN; return isFinite(v) ? v : 0; };
+  const list = [];
+  for (const r of rows.slice(1)) {
+    const m = String(r[c.ts] || '').match(/(\d{4})-(\d{2})-(\d{2})[ T](\d{1,2}):(\d{2})/) || String(r[c.ts] || '').match(/(\d{1,2})\/(\d{1,2})\/(\d{2,4})\D+(\d{1,2}):(\d{2})/);
+    if (!m) continue;
+    const d = m[1].length === 4 ? new Date(+m[1], +m[2] - 1, +m[3], +m[4], +m[5]) : new Date(+(m[3].length === 2 ? '20' + m[3] : m[3]), +m[1] - 1, +m[2], +m[4], +m[5]);
+    const entry = pelotonEntry({ discipline: r[c.disc] || r[c.type] || '', title: r[c.title] || '', minutes: num(r, c.len), miles: num(r, c.dist), cal: num(r, c.cal),
+      hr: num(r, c.hr), incline: num(r, c.inc), speed: num(r, c.spd), output: num(r, c.out), id: pelId(d) });
+    list.push({ k: keyOf(d), time: d.getTime(), entry });
+  }
+  if (!list.length) throw new Error('No workouts found in that file');
+  return addPelotonWorkouts(list);
+}
+function pelotonSheet() {
+  openSheet(`<div class="row" style="gap:8px;margin-bottom:12px"><button class="icon-btn" id="pel-back" aria-label="Back">‹</button><h2 style="margin:0">Import from Peloton</h2></div>
+    <section class="card">
+      <div class="eyebrow">📄 Workout history file · best for catching up</div>
+      <ol class="steps">
+        <li>In Safari, sign in at <b>members.onepeloton.com</b></li>
+        <li>Open your <b>profile</b> → <b>Workouts</b> → tap <b>Download Workouts</b></li>
+        <li>Come back here and pick the file (it’s in Files → Downloads)</li>
+      </ol>
+      <label class="btn"><input type="file" id="pel-csv" accept=".csv,text/csv" hidden>Choose Peloton file</label>
+      <p class="sub" style="margin:10px 0 0">Each class lands on the day you took it. Importing again only adds new classes.</p>
+    </section>
+    <section class="card">
+      <div class="eyebrow">📸 One workout · from a screenshot</div>
+      <p class="sub">Screenshot the workout summary in the Peloton app, then pick it here.${aiReady() ? '' : ' <b>Needs AI</b> (Me → AI estimates).'}</p>
+      <label class="btn secondary ${aiReady() ? '' : 'disabled'}"><input type="file" id="pel-shot" accept="image/*" hidden ${aiReady() ? '' : 'disabled'}>Choose screenshot</label>
+      <div id="pel-shot-out"></div>
+    </section>
+    <section class="card">
+      <div class="eyebrow">✍️ Or type it in · 20 seconds</div>
+      <div class="grid2">
+        <div class="field"><label>Class</label><input class="input" id="pel-title" placeholder="40 min Run"></div>
+        <div class="field"><label>Minutes</label><input class="input" id="pel-min" inputmode="decimal" placeholder="40"></div>
+        <div class="field"><label>Calories</label><input class="input" id="pel-cal" inputmode="numeric" placeholder="502"></div>
+        <div class="field"><label>Miles · optional</label><input class="input" id="pel-mi" inputmode="decimal" placeholder="2.11"></div>
+      </div>
+      <button class="btn secondary" id="pel-add">Add to ${relDate(viewDay).toLowerCase() === 'today' ? 'today' : relDate(viewDay)}</button>
+    </section>
+    <p class="legal">Leanline never asks for your Peloton password. Peloton is a trademark of Peloton Interactive, Inc.; Leanline isn’t affiliated with Peloton.</p>`, sh => {
+    $('#pel-back', sh).onclick = () => exerciseSheet();
+    $('#pel-csv', sh).onchange = async e => {
+      const f = e.target.files[0]; if (!f) return;
+      try { const r = importPelotonCSV(await f.text()); closeSheet(); toast(`🚴 Imported ${r.added} Peloton workout${r.added === 1 ? '' : 's'}${r.dup ? ` · ${r.dup} already here` : ''}`); }
+      catch (err) { toast(err.message); }
+    };
+    const shot = $('#pel-shot', sh);
+    if (shot) shot.onchange = async e => {
+      const f = e.target.files[0]; if (!f) return;
+      const out = $('#pel-shot-out', sh); out.innerHTML = '<div class="estimate"><span class="spinner" style="border-top-color:currentColor"></span> Reading your workout…</div>';
+      try {
+        const photo = await readPhoto(f);
+        const r = await aiEstimate({ kind: 'exercise', image: photo.ai, text: 'Peloton workout summary screenshot' });
+        const m = String(r.when || '').match(/(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{1,2}):(\d{2}))?/);
+        const d = m ? new Date(+m[1], +m[2] - 1, +m[3], +(m[4] || 12), +(m[5] || 0)) : null;
+        const entry = pelotonEntry({ title: r.title, discipline: r.discipline || r.title, minutes: r.minutes, miles: r.miles, cal: r.calories, hr: r.avg_hr, incline: r.incline, speed: r.speed, output: r.output_kj, id: d && m[4] ? pelId(d) : '' });
+        const res = addPelotonWorkouts([{ k: d ? keyOf(d) : viewDay, time: d ? d.getTime() : Date.now(), entry }]);
+        closeSheet(); toast(res.added ? `🚴 Added ${entry.name} · ${fmt(entry.cal)} cal` : 'That workout is already in Leanline');
+      } catch (err) { out.innerHTML = `<div class="estimate">${esc(err.message)}</div>`; }
+    };
+    $('#pel-add', sh).onclick = () => {
+      const cal = Number($('#pel-cal', sh).value), min = Number($('#pel-min', sh).value);
+      if (!(cal > 0) && !(min > 0)) return toast('Enter at least the calories or minutes');
+      const entry = pelotonEntry({ title: $('#pel-title', sh).value.trim() || 'Peloton class', discipline: $('#pel-title', sh).value, minutes: min, miles: Number($('#pel-mi', sh).value), cal });
+      logWorkout(entry);
+    };
+  });
+}
+
 function workoutHistorySheet() {
   const pr = personalRecords(), list = allWorkouts().reverse(), month = todayKey().slice(0, 7);
   const thisMonth = list.filter(x => x.k.startsWith(month));
